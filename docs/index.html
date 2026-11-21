@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Poisson hash-DAG challenge · public test</title>
+<style>
+:root{color:#172d35;background:#f5f6ef;font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.55}*{box-sizing:border-box}body{margin:0}main,nav,footer{max-width:960px;margin:auto;padding:1.2rem clamp(1rem,4vw,3rem)}header{background:#193740;color:#fff}nav{display:flex;justify-content:space-between;align-items:center}nav a{color:#e9f4d3}a{color:#125c6a;text-underline-offset:3px}h1,h2,p{margin:0 0 .6rem}h1{font:clamp(2.2rem,7vw,4.6rem)/1.02 Georgia,serif;letter-spacing:-.045em;max-width:780px;margin:1.2rem 0}h2{font:1.6rem/1.2 Georgia,serif}.lead{max-width:45rem}.action{display:inline-block;background:#17414a;color:white;padding:.6rem 1rem;margin:.4rem 0 1.4rem;text-decoration:none;border-radius:4px}.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.metric{border-top:3px solid #39645f;background:white;padding:1rem}.number{display:block;font:2.4rem/1.25 ui-monospace,monospace}.note,footer{font-size:.9rem;color:#435757}.row{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}section{margin:1.6rem 0}.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}th,td{text-align:left;padding:.5rem;border-bottom:1px solid #ced5cb}th{font-size:.85rem}select{font:inherit;padding:.25rem;background:#fff;color:inherit}footer{border-top:1px solid #ced5cb}@media(max-width:480px){.metrics{gap:.5rem}.number{font-size:1.6rem}.metric{padding:.7rem}th,td{padding:.4rem .2rem}}
+</style>
+<header><nav><strong>Poisson hash-DAG</strong><a href="https://github.com/chongxuren/poisson-fts-public-test">Test repository ↗</a></nav></header>
+<main><h1>Few-time signature challenge</h1>
+<p class="lead"><strong>Public rehearsal · $0 in prizes.</strong> Prove how short a signature can be. Submit a Lean proof of a universal lower bound or a construction in the Poisson(1) DAG-covering model.</p>
+<a class="action" href="https://github.com/chongxuren/poisson-fts-public-test/blob/main/RULES.md">How to submit →</a>
+<div class="metrics"><div class="metric">Rehearsal lower bound<strong class="number" id="lower">…</strong><span class="note">Larger wins. Practice opening is 97 B.</span></div><div class="metric">Certified construction<strong class="number" id="upper">…</strong><span class="note">Smaller wins. First proof sets the record.</span></div></div>
+<section><h2>Research target</h2><p>Mean use count 1 · Expected signing ≤ 2<sup>24</sup> hashes · Expected verification ≤ 512 hashes · Covering probability ≤ 2<sup>−128</sup>.</p>
+<p class="note">The organizer already proved 99 B. The proposed 756 B construction awaits its certificate. Rehearsal records have no research priority.</p></section>
+<section><div class="row"><h2>Leaderboard</h2><label>Track <select id="track"><option value="lower-bound">Lower bound</option><option value="construction">Construction</option></select></label></div>
+<div class="scroll"><table><thead><tr><th>Rank</th><th>Team</th><th>Bytes</th><th>Submission</th></tr></thead><tbody id="ranks"></tbody></table></div></section>
+<section><h2>Verified submissions</h2><div class="scroll"><table><thead><tr><th>PR</th><th>Team</th><th>Bytes</th><th>Record gain</th><th>Proof check</th></tr></thead><tbody id="history"></tbody></table></div></section>
+<p id="status" class="note" role="status">Loading certified scores…</p>
+</main><footer><a href="https://github.com/chongxuren/poisson-fts-public-test/actions/workflows/submit.yml">GitHub Actions runs</a> · <a href="https://github.com/chongxuren/poisson-fts-public-test/blob/main/docs/scores.json">Score ledger</a></footer>
+<script src="scores.js"></script></html>

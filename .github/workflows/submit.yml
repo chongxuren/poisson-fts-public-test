@@ -1,0 +1,53 @@
+name: Judge a submission
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, reopened, synchronize]
+permissions: {}
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    outputs:
+      receipt: ${{ steps.judge.outputs.receipt }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Read the pull request as data
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          git fetch --no-tags origin "refs/pull/$PR/head"
+          test "$(git rev-parse FETCH_HEAD)" = "$HEAD"
+          python3 -B -c 'import os,tempfile; from pathlib import Path; from judge.entry import from_git; d=tempfile.TemporaryDirectory(); from_git(os.environ["BASE"], os.environ["HEAD"], Path(d.name))'
+      - run: bash ci/setup.sh
+      - name: Replay the certificate against the organizer goal
+        id: judge
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: python3 -B ci/verify.py "$BASE" "$HEAD"
+  accept:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+      - name: Commit the checked entry and update scores
+        env:
+          RECEIPT: ${{ needs.verify.outputs.receipt }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -B ci/accept.py

@@ -31,7 +31,7 @@ def main (args : List String) : IO Unit := do
   | .error _ => throw <| IO.userError "certificate has a different target or byte bound"
   | .ok kenv =>
     let env := Lean.Environment.ofKernelEnv kenv
-    let axs ← (Lean.collectAxioms `Judge.checked).toIO'
+    let axs ← Core.CoreM.toIO' (Lean.collectAxioms `Judge.checked)
       { fileName := "<certificate>", fileMap := default } { env := env }
     unless axs.all (fun n => [`propext, `Classical.choice, `Quot.sound].contains n) do
       throw <| IO.userError s!"forbidden axiom dependency: {axs}"

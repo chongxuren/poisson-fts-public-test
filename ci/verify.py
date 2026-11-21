@@ -16,7 +16,7 @@ LIMIT=32*1024**2
 def mount(src, target):
     return ["--mount",f"type=bind,source={src},target={target},readonly"]
 
-def verify(directory):
+def verify(directory, *, fixture_debug=False):
     prefix=Path(subprocess.check_output(["lean","--print-prefix"],text=True).strip())
     libs=subprocess.check_output(["lake","env","printenv","LEAN_PATH"],text=True).strip().split(os.pathsep)
     sources=[Path(p).resolve() for p in libs if p and Path(p).is_dir() and not Path(p).resolve().is_relative_to(prefix)]
@@ -34,7 +34,7 @@ def verify(directory):
     guest=args+mount(directory/"proof","/proof")+mount(ROOT/"ci/guest.sh","/guest.sh")+mount(
         ROOT/"judge/ExportEntry.lean","/tools/ExportEntry.lean")+["-e","LEAN_PATH="+envpath,image,"bash","/guest.sh"]
     # Only a bounded text stream crosses into the trusted stage; no guest filesystem is retained.
-    with cert.open("wb") as out, subprocess.Popen(guest,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL) as p:
+    with cert.open("wb") as out, subprocess.Popen(guest,stdout=subprocess.PIPE,stderr=None if fixture_debug else subprocess.DEVNULL) as p:
         size=0
         while block:=p.stdout.read(65536):
             size+=len(block)
@@ -51,6 +51,9 @@ def verify(directory):
     with tempfile.TemporaryFile() as log:
         result=subprocess.run(trusted,stdout=log,stderr=subprocess.STDOUT)
         if result.returncode:
+            if fixture_debug:
+                log.seek(0)
+                print(log.read(1800).decode(errors="replace"), flush=True)
             raise ValueError("kernel rejected the proof, its axioms, or its claimed target")
 
 def main():

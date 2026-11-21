@@ -9,9 +9,9 @@ while ((${#pending[@]})); do
   for src in "${pending[@]}"; do
     rel=${src#/proof/}; out="/tmp/objects/${rel%.lean}.olean"
     mkdir -p "$(dirname "$out")"
-    if ! lean -R /proof -o "$out" "$src" >/dev/null 2>&1; then failed+=("$src"); fi
+    if ! lean -R /proof -o "$out" "$src" >/tmp/compile.log 2>&1; then failed+=("$src"); fi
   done
-  (( ${#failed[@]} < ${#pending[@]} )) || exit 1
+  (( ${#failed[@]} < ${#pending[@]} )) || { tail -c 1000 /tmp/compile.log >&2; exit 1; }
   pending=("${failed[@]}")
 done
 exec lean --run /tools/ExportEntry.lean Main

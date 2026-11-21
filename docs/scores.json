@@ -1,0 +1,15 @@
+{
+  "opening": {
+    "lower-bound": 97,
+    "construction": null
+  },
+  "best": {
+    "lower-bound": 97,
+    "construction": null
+  },
+  "rankings": {
+    "lower-bound": [],
+    "construction": []
+  },
+  "history": []
+}

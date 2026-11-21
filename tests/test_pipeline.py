@@ -45,7 +45,7 @@ class JudgeTests(unittest.TestCase):
                 directory = Path(tmp)
                 prepare(*fixture(proof, bound, track), directory)
                 if valid:
-                    verify(directory)
+                    verify(directory, fixture_debug=True)
                 else:
                     with self.assertRaisesRegex(ValueError, "kernel rejected"):
-                        verify(directory)
+                        verify(directory, fixture_debug=True)
