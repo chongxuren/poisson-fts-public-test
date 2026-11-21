@@ -48,7 +48,7 @@ def verify(directory, *, fixture_debug=False):
         ROOT/"judge/Replay.lean","/tools/Replay.lean")+["-e","LEAN_PATH=/tmp:"+envpath,image,"bash","-ec",
         "lean -R /expected -o /tmp/Expected.olean /expected/Expected.lean && lean --run /tools/Replay.lean /data/proof"]
     # Malformed proof data may cause large diagnostics. Keep it out of workflow commands.
-    with tempfile.TemporaryFile() as log:
+    with (tempfile.TemporaryFile() if fixture_debug else open(os.devnull, "wb")) as log:
         result=subprocess.run(trusted,stdout=log,stderr=subprocess.STDOUT)
         if result.returncode:
             if fixture_debug:

@@ -51,3 +51,30 @@ jobs:
           RECEIPT: ${{ needs.verify.outputs.receipt }}
           GH_TOKEN: ${{ github.token }}
         run: python3 -B ci/accept.py
+  report:
+    needs: [verify, accept]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    permissions:
+      statuses: write
+    steps:
+      - name: Attach the result to the exact PR head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          VERIFIED: ${{ needs.verify.result }}
+          ACCEPTED: ${{ needs.accept.result }}
+        run: |
+          state=error
+          message='Promotion did not complete. See the workflow run.'
+          if [[ "$VERIFIED" != success ]]; then
+            state=failure
+            message='Entry did not pass verification. See the workflow run.'
+          elif [[ "$ACCEPTED" == success ]]; then
+            state=success
+            message='Proof checked and the score ledger was updated.'
+          fi
+          gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$HEAD" \
+            -f state="$state" -f context='Poisson challenge judge' -f description="$message" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --silent
