@@ -1,0 +1,23 @@
+{
+  "representation": "explicit-dag-circuit-v1",
+  "graph": [
+    [
+      "source"
+    ]
+  ],
+  "encoder": {
+    "inputs": 1,
+    "gates": [
+      [
+        "constant",
+        true
+      ]
+    ],
+    "outputs": [
+      0,
+      0,
+      0
+    ]
+  },
+  "counter_bits": 1
+}
