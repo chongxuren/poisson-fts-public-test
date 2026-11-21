@@ -1,0 +1,19 @@
+# What would a Yukon launch require?
+
+This rehearsal runs independently on GitHub. It already checks a single candidate against a protected Lean goal, isolates entrant code, and ranks each track by verified bytes. Construction minimizes the score and lower bound maximizes it. [Rehearsal rules](../RULES.md) · [Judge workflow](../.github/workflows/submit.yml)
+
+| Area | Rehearsal today | For a Yukon import |
+| --- | --- | --- |
+| Benchmark manifest | The Python judge selects the track and validates the entrant's new directory. | Add `benchmark.json` with both track directions, editable paths, setup and benchmark commands, runner workflow and a score path outside the editable files. The author guide illustrates schema 1. The deployed sig.golf manifest uses schema 2 with a `tracks` array. |
+| Intake and baseline | Entrants open PRs under `submissions/<track>/<id>/`. The ledger and accepted proofs supply baseline results. | Expose a candidate location for each track that Yukon can replace from an archive. Pin a baseline per track and run it through the same scoring command as a candidate. Yukon creates the submission branch and PR. |
+| Scoring workflow | PR events start proof replay. Success produces a receipt and updates the cumulative ledger. The manual workflow runs infrastructure tests. | Provide a `workflow_dispatch` benchmark that checks the dispatched revision and uploads the declared score file with one finite numeric `score` after successful verification. A failed proof must produce no score. |
+| Promotion | The judge commits every verified entry with its receipt. Only a strict improvement changes the record. | Yukon compares scores, closes non-improving PRs and promotes a selected improvement by fast-forward. A hosted track needs one promotion authority. |
+| Onboarding | Entrants use their GitHub account and this repo's judge. | Confirm the production Yukon GitHub App installation with the repository owner and arrange benchmark import with Yukon before advertising CLI submission. |
+
+The closest signature example also binds the certificate to exact submitted code. Its RISC-V cycle score and adaptive forgery experiment are specific to sig.golf. Our contract measures signature bytes under a shared Poisson(1) DAG-covering bound. [Yukon author guide](https://github.com/Layr-Labs/yukon-docs/blob/f88923cc6c30e02c01b142d4d373b7dd43f4dada/docs/github-actions-benchmark-author-guide.md) · [sig.golf manifest](https://github.com/Layr-Labs/sig.golf/blob/dfc7f33c600f981110f494089a23fa0dce8f7edc/benchmark.json) · [sig.golf rules](https://www.yukon.org/sig.golf/rules)
+
+## Participation and prizes
+
+The rehearsal pays $0. Its rules allow credited reproductions, and its license specifies rights for code and exposition. A paid edition still needs published dates, a named organizer and payer, eligibility and team rules, the prize split and payout procedure, a policy for unfilled places, and an objection window. Those are organizer decisions. [Rehearsal rules](../RULES.md) · [Licensing](../LICENSE.md)
+
+Yukon's site terms point participants to each challenge's own terms and privacy policy. For a hosted edition, publish the applicable terms and explain what participant and submission data become public. sig.golf explicitly permits AI assistance, assigns responsibility to the submitting account, and restricts cross-account copies without substantive improvements. Our rehearsal expressly allows attributed replays. A prize edition should state how it treats AI assistance, coauthors, duplicate teams, copied entries and attempts to manipulate the judge. [Yukon site terms](https://www.yukon.org/terms) · [sig.golf participant terms](https://www.yukon.org/sig.golf/terms) · [sig.golf privacy policy](https://www.yukon.org/sig.golf/privacy)

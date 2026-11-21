@@ -7,13 +7,19 @@
 | Lower bound | Every eligible scheme uses at least the claimed bytes | Larger | 97 B, deliberately below the known 99 B |
 | Construction | The explicit submitted scheme is eligible and uses at most the claimed bytes | Smaller | Open until the first verified construction |
 
-The formal contract is [V2/Model.lean](formal/PoissonDAG/V2/Model.lean), together with its [base model](formal/PoissonDAG/Model.lean). It measures maximum serialized signature bytes, expected signing and verification hashes, honest failure, and the chance that disclosures from one shared Poisson(1) history cover a fresh independent raw target. Each disclosure must contribute to the recomputed root. The covering target is a symbolic probability of at most 2⁻¹²⁸. Full adaptive ROM unforgeability would require another theorem. The independent input bits feed an explicit acyclic Boolean circuit.
+Both tracks use the **authenticated-disclosure model**. Every disclosed label must contribute to the root recomputed during verification. The model measures maximum serialized signature bytes, expected signing and verification hashes, honest failure, and the chance that disclosures from one shared Poisson(1) history cover a fresh independent raw target. The covering target is a symbolic probability of at most 2⁻¹²⁸. Full adaptive ROM unforgeability would require another theorem. The independent input bits feed an explicit acyclic Boolean circuit. The Lean examples use the namespace `PoissonDAG.V2` for this model. [Formal contract](formal/PoissonDAG/V2/Model.lean) · [Base definitions](formal/PoissonDAG/Model.lean)
+
+## One scored claim per pull request
+
+- A **construction PR** claims one maximum byte bound for one fixed scheme and parameter set. Two parameter sets you want scored separately need separate PRs, even within the same family. [2,132-byte FORS+C entry](submissions/construction/fors-c-2132/) · [2,020-byte FORS+C entry](submissions/construction/fors-c-2020/)
+- A **lower-bound PR** claims one universal byte bound. A construction and a lower bound prove different claims and need separate PRs.
+- You may use multiple commits and Lean helper modules within the entry limits. Push proof fixes to the same open PR. The judge checks the final diff against the PR base and scores the single claim in `claim.json` after its proof passes. Each new head triggers a fresh run with its own priority. After acceptance, use a new entry ID and PR for any improvement.
 
 ## Prepare a submission
 
 1. Fork the repository. Start a branch at the latest upstream `main`.
 2. Add **one new directory** at `submissions/<track>/<id>/`, choosing either `construction` or `lower-bound`. A team may enter both tracks through separate PRs. Use lowercase letters, digits and hyphens for the ID and team name. Choose a fresh ID for each accepted entry.
-3. Add the four common files below and, for a construction, `program.json`. Commit, push your branch and open a pull request to upstream `main`. No CLI account or wallet is required.
+3. Add the four common files below and, for a construction, `program.json`. Restrict the PR diff to files added under your new entry directory. Commit, push your branch and open a pull request to upstream `main`. The PR, submitted source and judge result are public. Submit material you have the rights to license and retain third-party notices. [Repository licenses](LICENSE.md)
 
 | File | Contents |
 | --- | --- |
