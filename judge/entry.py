@@ -28,7 +28,29 @@ def array(value, label):
     require(type(value) is list, f"invalid {label}")
     return value
 
-def scheme_literal(data):
+def lean_list(name, element_type, items, declarations):
+    """Split large, organizer-generated literals into separately elaborated definitions."""
+    def literal(values):
+        return "[" + ",".join(values) + "]"
+
+    if declarations is None or len(items) <= 128:
+        return literal(items)
+    level = 0
+    while len(items) > 128:
+        refs = []
+        for start in range(0, len(items), 128):
+            ref = f"Judge.{name}_{level}_{start // 128}"
+            value = literal(items[start:start + 128])
+            if level:
+                value = "List.flatten " + value
+            declarations.append(f"def {ref} : List {element_type} := {value}\n")
+            refs.append(ref)
+        items = refs
+        level += 1
+    return "List.flatten " + literal(items)
+
+
+def scheme_literal(data, declarations=None):
     require(type(data) is dict and set(data) == {"representation","graph","encoder","counter_bits"}
             and data["representation"] == "explicit-dag-circuit-v1", "expected explicit DAG circuit")
     graph, encoder = array(data["graph"], "graph"), data["encoder"]
@@ -48,14 +70,16 @@ def scheme_literal(data):
                 limit = inputs if gates and tag == "input" else index
                 require(all(natural(x, "index") < limit for x in args), "invalid reference")
             result.append("."+tag+"".join(" "+str(x) for x in args))
-        return "["+",".join(result)+"]"
+        return lean_list("gates" if gates else "nodes",
+                         "PoissonDAG.Gate" if gates else "PoissonDAG.Node", result, declarations)
     nodes = terms(graph, {"source":0,"unary":1,"binary":2})
     gates = terms(encoder["gates"], {"input":1,"constant":1,"neg":1,"conj":2,"xor":2}, True)
     outputs = array(encoder["outputs"], "outputs")
     require(len(outputs) == 1+2*len(graph) and all(natural(x, "output")<len(encoder["gates"]) for x in outputs),
             "invalid output mask layout")
     counter = natural(data["counter_bits"], "counter bits")
-    return f"⟨{nodes}, ⟨{inputs}, {gates}, [{','.join(map(str, outputs))}]⟩, {counter}⟩"
+    out = lean_list("outputs", "Nat", list(map(str, outputs)), declarations)
+    return f"⟨{nodes}, ⟨{inputs}, {gates}, {out}⟩, {counter}⟩"
 
 def prepare(files, entry, dest):
     parts = entry.split("/")
@@ -92,7 +116,9 @@ def prepare(files, entry, dest):
             literal = "PoissonDAG.GRSCC.scheme"
             claim["reference"] = "grs-cc-v1"
         else:
-            literal = scheme_literal(program)
+            definitions = []
+            literal = scheme_literal(program, definitions)
+            code += "".join(definitions)
         code += "def Judge.literal : PoissonDAG.Scheme := " + literal + "\n"
         goal = f"PoissonDAG.V2.ConstructionCertificate Judge.literal {bound}"
     else:
