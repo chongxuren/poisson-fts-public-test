@@ -37,7 +37,11 @@ for m in reversed(starts):
     begin = s.rfind('\n\n', 0, m.start()) + 2
     if begin < s.index('namespace PoissonDAG.GRSCC') + len('namespace PoissonDAG.GRSCC'):
         begin = m.start()
-    s = s[:begin] + 'run_cmd IO.eprintln "checking ' + m[1] + '"\n' + s[begin:]
+    s = s[:begin] + 'run_cmd do\n  let h ← IO.FS.Handle.mk "build/profile-progress" .append\n  h.putStrLn "' + m[1] + '"\n  h.flush\n' + s[begin:]
 Path('build/AuthProfile.lean').write_text(s)
 PROBE
-timeout 120s lake env lean build/AuthProfile.lean
+(
+  ulimit -v 6500000
+  timeout --signal=KILL 65s lake env lean build/AuthProfile.lean
+) || true
+cat build/profile-progress
