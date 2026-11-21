@@ -126,47 +126,58 @@ private def EndsAtRoot (r : Route) (v : Nat) : Prop :=
   r.Reconstructs v ∧ ∀ label, V2.Uses graph r.frontier (close graph r.frontier r.plan).1 label v →
     V2.Uses graph r.frontier (close graph r.frontier r.plan).1 label (graphNodes - 1)
 
-set_option maxRecDepth 12000 in
-private theorem walk_to_root (r : Route) (hsucc : AuthSuccessors r) (fuel : Nat) :
-    ∀ v, graphNodes - v ≤ fuel → (v ∈ r.disclosure ∨ v ∈ r.recovery) → EndsAtRoot r v := by
+private theorem parent_before {v w : Nat} {node : Node}
+    (valid : Node.ValidAt w node) (edge : parentAt v node) : v < w := by
+  cases node with
+  | source => exact False.elim edge
+  | unary a => obtain rfl := edge; exact valid
+  | binary a b =>
+    rcases edge with h | h
+    · exact h ▸ valid.1
+    · exact h ▸ valid.2
+
+private theorem isParent_of_lookup {g : List Node} {v w : Nat} {node : Node}
+    (lookup : g[w]? = some node) (edge : parentAt v node) : V2.IsParent g v w := by
+  unfold V2.IsParent
+  rw [lookup]
+  cases node <;> exact edge
+
+/-- Induct on distance to the root using just the increasing vertex indices. -/
+private theorem walk_of_step {n : Nat} {active reaches : Nat → Prop}
+    (bound : ∀ v, active v → v < n) (root : reaches (n - 1))
+    (step : ∀ v, active v → v ≠ n - 1 →
+      ∃ w, v < w ∧ active w ∧ (reaches w → reaches v)) (fuel : Nat) :
+    ∀ v, n - v ≤ fuel → active v → reaches v := by
   induction fuel with
   | zero =>
-    intro v hdist hv
-    have hb : v < graphNodes := hv.elim (disclosure_bounds r v) (recovery_bounds r v)
+    intro v distance hv
+    have := bound v hv
     omega
   | succ fuel ih =>
-    intro v hdist hv
-    by_cases he : v = graphNodes - 1
-    · subst v
-      exact ⟨root_reconstructs r, fun _ h => h⟩
-    · obtain ⟨w, hw, hcut, hp⟩ := hsucc v hv he
-      have hb := recovery_bounds r w hw
-      have hg := graph_get ⟨w, hb⟩
-      have hvw := graph_valid w _ hg
-      have hlt : v < w := by
-        cases hnode : graphNode w with
-        | source => simp [parentAt, hnode] at hp
-        | unary a =>
-          simp only [parentAt, hnode] at hp
-          simp only [hnode, Node.ValidAt] at hvw
-          omega
-        | binary a b =>
-          simp only [parentAt, hnode] at hp
-          simp only [hnode, Node.ValidAt] at hvw
-          rcases hp with h | h <;> omega
-      have hrec := ih w (by omega) (Or.inr hw)
-      refine ⟨r.reconstructs_parent hrec.1 hcut hp, ?_⟩
-      intro label huse
-      apply hrec.2 label
-      apply V2.Uses.hash huse
-      · rw [frontier_get r w hb]
-        exact decide_eq_false hcut
-      · exact close_of_planDerives graph_valid r.frontier r.plan
-          ((frontier_length r).trans graph_length'.symm) (lt_of_lt_of_eq hb graph_length'.symm)
-          (r.reconstructs_planDerives _ hrec.1)
-      · unfold V2.IsParent
-        rw [hg]
-        cases hn : graphNode w <;> simpa only [hn, parentAt] using hp
+    intro v distance hv
+    by_cases last : v = n - 1
+    · exact last ▸ root
+    · obtain ⟨w, hw, active_w, back⟩ := step v hv last
+      exact back (ih w (by omega) active_w)
+
+private theorem walk_to_root (r : Route) (hsucc : AuthSuccessors r) (fuel : Nat) :
+    ∀ v, graphNodes - v ≤ fuel → (v ∈ r.disclosure ∨ v ∈ r.recovery) → EndsAtRoot r v := by
+  apply walk_of_step (fuel := fuel)
+  · exact fun v hv => hv.elim (disclosure_bounds r v) (recovery_bounds r v)
+  · exact ⟨root_reconstructs r, fun _ h => h⟩
+  · intro v hv beforeRoot
+    obtain ⟨w, hw, hcut, edge⟩ := hsucc v hv beforeRoot
+    have hb := recovery_bounds r w hw
+    have lookup : graph[w]? = some (graphNode w) := graph_get ⟨w, hb⟩
+    refine ⟨w, parent_before (graph_valid w _ lookup) edge, Or.inr hw, ?_⟩
+    intro rest
+    refine ⟨r.reconstructs_parent rest.1 hcut edge, ?_⟩
+    intro label used
+    exact rest.2 label (.hash used ((frontier_get r w hb).trans (decide_eq_false hcut))
+      (close_of_planDerives graph_valid r.frontier r.plan
+        ((frontier_length r).trans graph_length'.symm) (lt_of_lt_of_eq hb graph_length'.symm)
+        (r.reconstructs_planDerives w rest.1))
+      (isParent_of_lookup lookup edge))
 
 /- Transport the index bound while the graph is abstract. Conversion on the
 concrete list can otherwise enumerate millions of nodes to identify its length. -/
