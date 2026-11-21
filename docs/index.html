@@ -33,7 +33,7 @@
         <span class="nav-divider"></span>
         <a class="nav-item" href="#leaderboard">Leaderboard</a>
         <a class="nav-item" href="#constructions">Constructions</a>
-        <a class="nav-item" href="#bounds">Bound history</a>
+        <a class="nav-item" href="#bounds">Signature bounds</a>
         <a
           class="repo-link"
           href="https://github.com/chongxuren/poisson-fts-public-test"
@@ -120,7 +120,7 @@
       <div class="shell dashboard">
         <section class="card bounds" id="bounds" aria-labelledby="bounds-title">
           <div class="card-head">
-            <h2 id="bounds-title">Bound history</h2>
+            <h2 id="bounds-title">Signature bounds</h2>
             <span class="micro">Signature bytes</span>
           </div>
           <div class="metrics">
@@ -131,7 +131,7 @@
             </div>
             <div>
               <span class="metric-label"
-                ><i class="swatch green"></i>Upper bound</span
+                ><i id="upper-swatch" class="swatch proposed"></i><span id="upper-label">Proposed upper bound</span></span
               ><strong id="upper">—</strong>
             </div>
           </div>
@@ -142,18 +142,12 @@
               aria-labelledby="plot-title plot-desc"
             ></svg>
           </div>
-          <div class="chart-controls">
-            <label
-              ><input type="checkbox" id="proposal" /> Show 756 B proposal
-              <i class="dash"></i></label
-            ><span class="axis-label">Submission order</span>
-          </div>
+          <p class="axis-label plot-axis">Submission order</p>
           <p class="chart-readout" id="readout" aria-live="off">
             Loading record history…
           </p>
-          <p class="card-note">
-            The rehearsal opened at 97 B. The organizer proved 99 B. The 756 B
-            GRS-CC proposal awaits a construction certificate.
+          <p class="card-note" id="bounds-note">
+            The rehearsal opened at 97 B. The organizer proved 99 B. The dashed line shows the size of the GRS-CC candidate pending certification.
           </p>
         </section>
 
@@ -206,18 +200,10 @@
             <h2 id="constructions-title">Construction track</h2>
             <a href="https://github.com/chongxuren/poisson-fts-public-test/blob/main/RULES.md#submit-a-construction">Entry rules</a>
           </div>
-          <p class="card-note">Build a signature and prove its maximum size. The first accepted proof sets the upper bound. These two reference designs are unranked.</p>
           <div class="designs">
-            <article>
-              <h3>GRS-CC <span>756 B</span></h3>
-              <p>A seven-layer hash DAG transmits up to 47 labels and a four-byte counter. Size and costs have Lean proofs. Covering and authentication remain open.</p>
-              <a href="https://github.com/chongxuren/poisson-fts-public-test/tree/main/examples/grs-cc">Lean construction and proof obligations</a>
-            </article>
-            <article>
-              <h3>Merkle forest <span>5,760 B</span></h3>
-              <p>Forty trees disclose nine labels each. The reference signer uses 20,482 hashes and the verifier uses 362. A full Lean certificate remains open.</p>
-              <a href="https://github.com/chongxuren/poisson-fts-public-test/tree/main/examples/merkle_forest">Run the signer and verifier</a>
-            </article>
+            <h3>GRS-CC <span>756 B</span></h3>
+            <p>Up to 47 hash labels and a four-byte counter. The size and hash budgets have Lean proofs. A certified upper bound also requires proofs of covering and authenticated disclosures.</p>
+            <a href="https://github.com/chongxuren/poisson-fts-public-test/tree/main/examples/grs-cc">Lean construction and proof obligations</a>
           </div>
         </section>
 

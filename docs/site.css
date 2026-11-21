@@ -367,8 +367,7 @@ footer a {
   padding-top: 0.15rem;
   font-variant-numeric: tabular-nums;
 }
-.swatch,
-.dash {
+.swatch {
   display: inline-block;
   width: 14px;
   border-top: 3px solid var(--blue);
@@ -377,7 +376,7 @@ footer a {
 .swatch.green {
   border-color: var(--mint);
 }
-.dash {
+.swatch.proposed {
   border-top: 2px dashed #e6b67f;
 }
 .plot-wrap {
@@ -389,26 +388,8 @@ footer a {
   height: 161px;
   overflow: visible;
 }
-.chart-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-.chart-controls label {
-  display: flex;
-  align-items: center;
-  gap: 0.48rem;
-  font-size: 0.82rem;
-  color: #d9d9e7;
-  cursor: pointer;
-}
-.chart-controls input {
-  accent-color: var(--blue);
-  width: 15px;
-  height: 15px;
-  margin: 0;
+.plot-axis {
+  text-align: right;
 }
 .axis-label {
   letter-spacing: 0;
@@ -656,12 +637,8 @@ footer {
   grid-column: 1 / -1;
 }
 .designs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.3rem;
-  margin-top: 1.15rem;
-}
-.designs article {
+  margin-top: 1rem;
+  max-width: 48rem;
   padding-left: 1rem;
   border-left: 2px solid #626e92;
 }
@@ -686,6 +663,5 @@ footer {
   font-size: 0.9rem;
 }
 @media (max-width: 740px) {
-  .designs { grid-template-columns: 1fr; }
   .actions { flex-wrap: wrap; }
 }

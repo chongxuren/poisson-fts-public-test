@@ -2,7 +2,7 @@ import { boundSeries, axis } from "./records.mjs";
 
 const repo = "https://github.com/chongxuren/poisson-fts-public-test";
 const svg = document.querySelector("#plot");
-const reference = document.querySelector("#proposal");
+const grsCandidateBytes = 756;
 const segments = [...document.querySelectorAll("[data-track]")];
 const number = new Intl.NumberFormat("en");
 const fmt = (v) => (v === null ? "Open" : number.format(v) + " B");
@@ -128,8 +128,10 @@ function inspect(index) {
       dot.setAttribute("cy", geometry.y(s[key]));
     }
   }
-  const label =
-    s.label + " · Lower " + fmt(s.lower) + " · Upper " + fmt(s.upper);
+  const upper = ledger.best.construction === null
+    ? "Proposed upper " + fmt(grsCandidateBytes)
+    : "Certified upper " + fmt(s.upper);
+  const label = s.label + " · Lower " + fmt(s.lower) + " · " + upper;
   document.querySelector("#readout").textContent = label;
   svg.querySelector("desc").textContent =
     label + ". Use the left and right arrow keys to inspect submissions.";
@@ -146,7 +148,8 @@ function drawPlot() {
   svg.setAttribute("viewBox", "0 0 " + w + " " + h);
   svg.setAttribute("tabindex", "0");
   const values = samples.flatMap((s) => [s.lower, s.upper]);
-  if (reference.checked) values.push(756);
+  const showCandidate = ledger.best.construction === null;
+  if (showCandidate) values.push(grsCandidateBytes);
   const scale = axis(values);
   const x = (i) =>
     left +
@@ -217,13 +220,13 @@ function drawPlot() {
         : String(v);
     svg.append(label(left - 7, y(v) + 4, tick, "end"));
   }
-  if (reference.checked) {
+  if (showCandidate) {
     svg.append(
       node("line", {
         x1: left,
-        y1: y(756),
+        y1: y(grsCandidateBytes),
         x2: right,
-        y2: y(756),
+        y2: y(grsCandidateBytes),
         stroke: "#e5b077",
         "stroke-width": 1.6,
         "stroke-dasharray": "5 5",
@@ -231,8 +234,8 @@ function drawPlot() {
     );
     const proposalLabel = label(
       right - 2,
-      y(756) < top + 17 ? y(756) + 14 : y(756) - 5,
-      "756 B · proposed",
+      y(grsCandidateBytes) < top + 17 ? y(grsCandidateBytes) + 14 : y(grsCandidateBytes) - 5,
+      fmt(grsCandidateBytes) + " · GRS-CC proposal",
       "end",
     );
     proposalLabel.setAttribute("fill", "#efc68f");
@@ -278,6 +281,14 @@ function drawPlot() {
         "stroke-linejoin": "round",
       }),
     );
+    if (key === "lower" && showCandidate && samples.length <= 5) {
+      for (const [i, v] of markers) {
+        const anchor = i === 0 ? "start" : i === samples.length - 1 ? "end" : "middle";
+        const text = label(x(i), y(v) - 9, fmt(v), anchor);
+        text.setAttribute("fill", color);
+        svg.append(text);
+      }
+    }
     if (markers.length <= 35)
       for (const [i, v] of markers)
         svg.append(
@@ -361,7 +372,6 @@ segments.forEach((btn) =>
     if (ledger) drawBoard();
   }),
 );
-reference.addEventListener("change", drawPlot);
 new ResizeObserver(drawPlot).observe(svg.parentElement);
 
 function display(data, source) {
@@ -369,7 +379,13 @@ function display(data, source) {
   samples = boundSeries(data);
   selected = samples.length - 1;
   document.querySelector("#lower").textContent = fmt(data.best["lower-bound"]);
-  document.querySelector("#upper").textContent = fmt(data.best.construction);
+  const hasUpper = data.best.construction !== null;
+  document.querySelector("#upper").textContent = fmt(data.best.construction ?? grsCandidateBytes);
+  document.querySelector("#upper-label").textContent = hasUpper ? "Certified upper bound" : "Proposed upper bound";
+  document.querySelector("#upper-swatch").className = hasUpper ? "swatch green" : "swatch proposed";
+  document.querySelector("#bounds-note").textContent = hasUpper
+    ? "The rehearsal opened at 97 B. The upper curve begins at the first certified construction."
+    : "The rehearsal opened at 97 B. The organizer proved 99 B. The dashed line shows the size of the GRS-CC candidate pending certification.";
   document.querySelector("#sync").textContent = source;
   drawBoard();
   drawHistory();
