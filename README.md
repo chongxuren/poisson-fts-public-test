@@ -8,7 +8,8 @@ Prove a universal lower bound on signature bytes or certify a shorter constructi
 | --- | --- |
 | 99 B universal lower bound | [Organizer's Lean theorem](formal/PoissonDAG/V2/Lower99.lean) |
 | [2,432 B FORS and 2,132 / 2,020 B FORS+C](examples/fors/) | Complete V2 Lean proofs for three frozen parameter sets. Submission receipts appear on the live leaderboard. |
-| [756 B GRS-CC](examples/grs-cc/) | Lean scheme and proved cost/size bounds. Covering and authenticated disclosures still need a complete V2 proof. |
+| [1,780 B PORS+FP, 1,492 B BPORS+FP, 1,188 B BPORS-C+BFP](RULES.md#pors-family-references) | Three candidate sizes. Each needs a proof connecting its literal encoder and pooled disclosures to the counting argument. |
+| [756 B GRS-CC](examples/grs-cc/) | Lean proves authentication, size and hash costs. Nineteen local covering inequalities remain open. |
 | [5,760 B Merkle forest](examples/merkle_forest/) | Runnable signer, verifier and explicit judge-format program. Written covering argument and exact arithmetic check. |
 
 The construction leaderboard takes its upper bound from the best accepted submission. Run the forest with `python3 -B examples/merkle_forest/reference.py`.

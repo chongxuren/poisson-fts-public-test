@@ -13,12 +13,16 @@ echo "$tool/$release/bin" >> "$GITHUB_PATH"
 targets=(PoissonDAG.V2.Lower99)
 roots=(formal/starter-cache-roots.txt)
 if [[ ${FTS_BUILD_GRSCC:-false} == true ]]; then
-  targets+=(PoissonDAG.Constructions.GRSCC.Reference)
+  targets+=(PoissonDAG.Constructions.GRSCC.{Reference,Certification,TwoSame})
   roots+=(formal/grscc-cache-roots.txt)
 fi
 if [[ ${FTS_BUILD_FORS:-false} == true ]]; then
   targets+=(PoissonDAG.Constructions.FORS.Components)
   roots+=(formal/fors-cache-roots.txt)
+fi
+if [[ ${FTS_BUILD_PORS:-false} == true ]]; then
+  targets+=(PoissonDAG.Constructions.PORS.{LiteralAssembly,SingleRefinedSupport,BucketRefinedSupport,ChainRefinedSupport,ChainRefinedCoefficients})
+  roots+=(formal/pors-cache-roots.txt)
 fi
 cat "${roots[@]}" | xargs lake exe cache get
 lake build "${targets[@]}"

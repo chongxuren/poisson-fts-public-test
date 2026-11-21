@@ -102,6 +102,20 @@ class JudgeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp, self.assertRaises(ValueError):
             prepare(files, path, Path(tmp))
 
+    def test_pors_references_bind_exact_schemes(self):
+        rows = [("pors-fp-1780-v1", "single", 1780),
+                ("bpors-fp-1492-v1", "bucket", 1492),
+                ("bpors-c-bfp-1188-v1", "chainBuckets", 1188)]
+        for reference, scheme, size in rows:
+            with self.subTest(reference=reference), tempfile.TemporaryDirectory() as tmp:
+                files, path = fixture("conditional.lean", size, "construction")
+                files["program.json"] = json.dumps({
+                    "representation": "organizer-reference-v1", "scheme": reference}).encode()
+                self.assertEqual(prepare(files, path, Path(tmp))["reference"], reference)
+                expected = (Path(tmp) / "Expected.lean").read_text()
+                self.assertIn(":= PoissonDAG.PORS.Literal." + scheme + "\n", expected)
+                self.assertIn(f":= PoissonDAG.V2.ConstructionCertificate Judge.literal {size}\n", expected)
+
     @unittest.skipUnless(os.environ.get("JUDGE_IMAGE"), "requires the pinned Linux judge")
     def test_reference_proof(self):
         files, path = fixture("grs_reference.lean", 756, "construction")

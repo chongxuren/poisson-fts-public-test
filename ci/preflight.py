@@ -3,7 +3,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from judge.entry import from_git
+from judge.entry import REFERENCES, from_git
 
 if __name__ == "__main__":
     with tempfile.TemporaryDirectory() as directory:
@@ -11,3 +11,5 @@ if __name__ == "__main__":
     with open(os.environ["GITHUB_OUTPUT"], "a") as output:
         print("grscc=" + str(claim.get("reference") == "grs-cc-v1").lower(), file=output)
         print("fors=" + str(claim.get("reference", "").startswith("fors-")).lower(), file=output)
+        module, _ = REFERENCES.get(claim.get("reference"), ("", ""))
+        print("pors=" + str(module == "PORS.Literal").lower(), file=output)

@@ -10,15 +10,10 @@ The addressed graph has 2,629,119 vertices. Each counter trial uses two hash cal
 
 ## What would earn the upper bound?
 
-The [Lean assembly lemma](../../formal/PoissonDAG/Constructions/GRSCC/Reference.lean) reduces certification to two obligations for this exact scheme.
-
-1. Show that pooling disclosures from one shared Poisson(1) history covers an independent raw target with probability at most 2⁻¹²⁸ in the model.
-2. For every accepted raw input, show that every transmitted label contributes to the verifier's recomputed root under its executed plan.
-
-With proofs of both, submit the unchanged manifest and an **unconditional** theorem named `Submission.certificate`. The research work on the covering recurrence and scalar envelope has not yielded a complete accepted certificate. [Construction submission rules](../../RULES.md#submit-a-construction)
+Lean proves that every transmitted label contributes to the recomputed root. The shared-Poisson covering argument reduces to twenty inequalities indexed by the number of local histories and how many use the target slot. The case where both histories use the target slot has a proof. Proving the remaining nineteen would complete this route to an unconditional 756-byte certificate. [Authentication](../../formal/PoissonDAG/Constructions/GRSCC/Authentication.lean) · [Conditional certificate](../../formal/PoissonDAG/Constructions/GRSCC/Certification.lean) · [Two same-slot histories](../../formal/PoissonDAG/Constructions/GRSCC/TwoSame.lean)
 
 To build the public components locally with the pinned Lean toolchain:
 
 ```sh
-lake build PoissonDAG.Constructions.GRSCC.Reference
+lake build PoissonDAG.Constructions.GRSCC.Certification PoissonDAG.Constructions.GRSCC.TwoSame
 ```

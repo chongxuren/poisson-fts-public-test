@@ -43,6 +43,7 @@ def verify(directory, *, fixture_debug=False):
                 raise ValueError("proof export exceeds 32 MiB")
             out.write(block)
         if p.wait()!=0 or size==0: raise ValueError("contestant compilation or proof export failed")
+    print("Entrant Lean compiled and the proof was exported for independent replay.", flush=True)
     # All source here is organizer-generated. The replay process cannot read entrant Lean or .olean files.
     trusted=args+mount(directory/"Expected.lean","/expected/Expected.lean")+mount(cert,"/data/proof")+mount(
         ROOT/"judge/Replay.lean","/tools/Replay.lean")+["-e","LEAN_PATH=/tmp:"+envpath,image,"bash","-ec",

@@ -16,6 +16,9 @@ REFERENCES = {
     "fors-18-8-v1": ("FORS.Literal", "PoissonDAG.FORS.Config.scheme ⟨18, 8, 0, 0⟩"),
     "fors-c-18-7-18-v1": ("FORS.Literal", "PoissonDAG.FORS.Config.scheme ⟨18, 7, 18, 25⟩"),
     "fors-c-17-7-19-v1": ("FORS.Literal", "PoissonDAG.FORS.Config.scheme ⟨17, 7, 19, 26⟩"),
+    "pors-fp-1780-v1": ("PORS.Literal", "PoissonDAG.PORS.Literal.single"),
+    "bpors-fp-1492-v1": ("PORS.Literal", "PoissonDAG.PORS.Literal.bucket"),
+    "bpors-c-bfp-1188-v1": ("PORS.Literal", "PoissonDAG.PORS.Literal.chainBuckets"),
 }
 
 def require(test, message):

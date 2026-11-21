@@ -42,11 +42,23 @@ theorem Submission.certificate : PoissonDAG.V2.UniversalLowerBound 99 :=
 Supply an executable construction and a complete Lean proof for the same scheme. **Smaller maximum serialized signatures win.** The first eligible construction opens the track at its proven byte bound. Subsequent records must be strictly smaller. The 756 B GRS-CC and 5,760 B forest examples are unranked, so the first entry may exceed either figure.
 
 1. Place the four common files and `program.json` in `submissions/construction/<id>/`. Set the track to `construction` and `bound_bytes` to your claimed upper bound, in whole bytes.
-2. Bind the implementation to the claim using **one** of the two program formats below. For an original design, submit the actual DAG and Boolean encoder. The rehearsal also supports the fixed organizer GRS-CC implementation by name.
+2. Bind the implementation to the claim using **one** of the two program formats below. For an original design, submit the actual DAG and Boolean encoder. The fixed organizer implementations listed below can be selected by name.
 3. Prove `PoissonDAG.V2.ConstructionCertificate yourScheme N` in the unconditional theorem `Submission.certificate`. The judge constructs its own goal from the manifest and claimed byte count. Eligibility includes well-formedness, honest correctness, authenticated disclosures, honest failure ≤ 2⁻¹²⁸, expected signing ≤ 2²⁴ hashes, expected verification ≤ 512 hashes, and the shared-Poisson(1) covering target ≤ 2⁻¹²⁸. The size claim is a maximum.
 4. Describe the construction, size and hash accounting in `ARGUMENT.md`. Credit the design and the proof authors in `PROVENANCE.md`. A runnable example, simulations or a theorem that assumes eligibility leaves the entry unranked.
 
 **FORS references.** The three frozen configurations have [parameter sets and Lean proofs](examples/fors/). Use an exact manifest such as `{"representation":"organizer-reference-v1","scheme":"fors-c-17-7-19-v1"}`. The byte bound in your claim must follow from a proof for that exact scheme.
+
+#### PORS family references
+
+| Construction | Manifest scheme | Candidate bytes |
+| --- | --- | ---: |
+| PORS+FP | `pors-fp-1780-v1` | 1,780 |
+| BPORS+FP | `bpors-fp-1492-v1` | 1,492 |
+| BPORS-C+BFP | `bpors-c-bfp-1188-v1` | 1,188 |
+
+Each manifest selects one [graph and encoder](formal/PoissonDAG/Constructions/PORS/Literal.lean). To complete its [conditional certificate](formal/PoissonDAG/Constructions/PORS/LiteralAssembly.lean), prove the row's `Refinement` for that circuit. The judge awards a score only for the unconditional theorem.
+
+#### GRS-CC reference
 
 **Fixed GRS-CC reference.** Copy the [756-byte manifest](examples/grs-cc/program.json) to `program.json`. It names exactly the organizer's graph and encoder at the checked base commit. This fits the upload limit even though the graph has 2,629,119 vertices. A change to any construction parameter describes a different scheme and must use the explicit format.
 
@@ -54,7 +66,7 @@ Supply an executable construction and a complete Lean proof for the same scheme.
 {"contract":"poisson-dag-v2-rehearsal-1","track":"construction","id":"grs-proof","team":"example-team","bound_bytes":756}
 ```
 
-The JSON above belongs in `claim.json`. The [GRS-CC Lean entry point](formal/PoissonDAG/Constructions/GRSCC/Reference.lean) shows how to finish the proof from covering and authentication. Existing resource lemmas may be reused with attribution.
+The JSON above belongs in `claim.json`. The [GRS-CC Lean assembly](formal/PoissonDAG/Constructions/GRSCC/Certification.lean) reduces the remaining proof to local covering inequalities. Existing lemmas may be reused with attribution.
 
 **Explicit graph and encoder.** A complete runnable example is the [5,760-byte Merkle forest](examples/merkle_forest/). Its [program.json](examples/merkle_forest/program.json) is generated from the same implementation used in the sign/verify demonstration.
 
