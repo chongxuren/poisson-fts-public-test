@@ -1,0 +1,7 @@
+# BPORS+FP at 1,492 bytes
+
+Each of two coordinates selects one of 1,024 buckets and opens six leaves in its 1,792-leaf child tree. Each bucket path has ten siblings. The two child proofs together may have at most 61 siblings. The proposed maximum is 4 counter bytes plus 16 × (2 × (6 + 10) + 61) = 1,492 bytes. [Frozen row](../../../formal/PoissonDAG/Constructions/PORS/BucketRefinedRow.lean) · [Graph and encoder](../../../formal/PoissonDAG/Constructions/PORS/Literal.lean)
+
+The row uses 131 raw bits and a 28-bit counter. Its counting argument gives at most 15,333,760 expected signing hashes and 106 hashes per successful verification. Lean verifies the row arithmetic, the pruned support count and the finite Poisson sum including a bound on the tail. [Arithmetic](../../../formal/PoissonDAG/Constructions/PORS/BucketRefinedChecks.lean) · [Support count](../../../formal/PoissonDAG/Constructions/PORS/BucketRefinedSupport.lean)
+
+The open premise is `Literal.Refinement`. It requires that the production gates select precisely the counted words, emit the claimed number of labels and hash operations, and produce the routed opening for each accepted input. For every history length, coverage by the pooled disclosures must satisfy the counting bound. The submitted Lean theorem derives the full challenge goal assuming those properties. [Exact premise and theorem](../../../formal/PoissonDAG/Constructions/PORS/LiteralAssembly.lean)
