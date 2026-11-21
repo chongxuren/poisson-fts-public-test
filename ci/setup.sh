@@ -12,6 +12,8 @@ export PATH="$tool/$release/bin:$PATH" MATHLIB_NO_CACHE_ON_UPDATE=1
 echo "$tool/$release/bin" >> "$GITHUB_PATH"
 xargs lake exe cache get < formal/starter-cache-roots.txt
 lake build PoissonDAG.V2.Lower99
+# Mathlib cache files can be owner-only. Both containers use an unprivileged UID.
+find .lake -type d -path "*/build/lib/lean" -prune -exec chmod -R a+rX {} +
 mkdir -p build/lib/Export
 export LEAN_PATH="$PWD/build/lib"
 lean -o build/lib/Export.olean judge/vendor/Export.lean
