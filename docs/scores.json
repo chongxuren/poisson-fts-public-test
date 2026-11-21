@@ -137,6 +137,21 @@
       "previous": 2132,
       "delta": 112,
       "record": true
+    },
+    {
+      "track": "lower-bound",
+      "id": "cli-replay-99",
+      "bound_bytes": 99,
+      "team": "organizer",
+      "contract": "poisson-dag-v2-rehearsal-1",
+      "snapshot": "f7772017cf054cbb656edcaeff48c0757c4c6a829bce778237f3e1faa29920ce",
+      "base": "8260a58a1a6391f2878258907fcfb399dcce1d8d",
+      "head": "0b973c484337d69339d5cec0e58a2770b2de14cf",
+      "pr": 11,
+      "run": 44924192371,
+      "previous": 99,
+      "delta": 0,
+      "record": false
     }
   ]
 }

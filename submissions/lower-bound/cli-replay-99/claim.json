@@ -1,0 +1,7 @@
+{
+  "track": "lower-bound",
+  "id": "cli-replay-99",
+  "bound_bytes": 99,
+  "team": "organizer",
+  "contract": "poisson-dag-v2-rehearsal-1"
+}
