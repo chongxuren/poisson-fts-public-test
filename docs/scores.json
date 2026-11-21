@@ -53,8 +53,8 @@
         "head": "1261c41a3dc1d9151eca8b3fe8e62418979a4050",
         "pr": 5,
         "run": 44911275655,
-        "previous": null,
-        "delta": null,
+        "previous": 2432,
+        "delta": 300,
         "record": true
       }
     ]
@@ -93,6 +93,22 @@
     {
       "contract": "poisson-dag-v2-rehearsal-1",
       "track": "construction",
+      "id": "fors-2432",
+      "team": "organizer",
+      "bound_bytes": 2432,
+      "reference": "fors-18-8-v1",
+      "snapshot": "4f9179470e59a25288bfda16eb6c1e4a7257ba3d5a9789dee1c0c163d528a093",
+      "base": "03a08dfcb18efd4af4fbf9a7f671cdd1926995ed",
+      "head": "a169adda294d9331490ce416630e720ff435221a",
+      "pr": 4,
+      "run": 44911266913,
+      "previous": null,
+      "delta": null,
+      "record": true
+    },
+    {
+      "contract": "poisson-dag-v2-rehearsal-1",
+      "track": "construction",
       "id": "fors-c-2132",
       "team": "organizer",
       "bound_bytes": 2132,
@@ -102,8 +118,8 @@
       "head": "1261c41a3dc1d9151eca8b3fe8e62418979a4050",
       "pr": 5,
       "run": 44911275655,
-      "previous": null,
-      "delta": null,
+      "previous": 2432,
+      "delta": 300,
       "record": true
     }
   ]
