@@ -162,7 +162,8 @@ private theorem walk_of_step {n : Nat} {active reaches : Nat → Prop}
 
 private theorem walk_to_root (r : Route) (hsucc : AuthSuccessors r) (fuel : Nat) :
     ∀ v, graphNodes - v ≤ fuel → (v ∈ r.disclosure ∨ v ∈ r.recovery) → EndsAtRoot r v := by
-  apply walk_of_step (fuel := fuel)
+  refine walk_of_step (n := graphNodes) (active := fun v => v ∈ r.disclosure ∨ v ∈ r.recovery)
+    (reaches := EndsAtRoot r) ?_ ?_ ?_ fuel
   · exact fun v hv => hv.elim (disclosure_bounds r v) (recovery_bounds r v)
   · exact ⟨root_reconstructs r, fun _ h => h⟩
   · intro v hv beforeRoot

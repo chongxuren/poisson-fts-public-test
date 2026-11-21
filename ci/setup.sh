@@ -41,8 +41,10 @@ for m in reversed(starts):
 Path('build/AuthProfile.lean').write_text(s)
 PROBE
 libs=$(lake env printenv LEAN_PATH)
+probe_status=0
 docker run --rm --network=none --memory=5g --memory-swap=5g \
   -e LEAN_NUM_THREADS=1 -e LEAN_PATH="$libs" -v "$PWD:$PWD" -v "$tool:$tool:ro" -w "$PWD" \
   ubuntu@sha256:9a04f13b3f80ef056361e30868593b1cfd2279fe19e4081cb93a90bf56819d6a \
-  /usr/bin/timeout --signal=KILL 65s "$tool/$release/bin/lean" -j1 build/AuthProfile.lean || true
+  /usr/bin/timeout --signal=KILL 65s "$tool/$release/bin/lean" -j1 build/AuthProfile.lean || probe_status=$?
 cat build/profile-progress
+exit "$probe_status"
