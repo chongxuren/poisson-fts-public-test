@@ -7,7 +7,7 @@ permissions: {}
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 70
     permissions:
       contents: read
     outputs:
@@ -29,11 +29,13 @@ jobs:
           test "$(git rev-parse FETCH_HEAD)" = "$HEAD"
           python3 -B -m ci.preflight
       - run: bash ci/setup.sh
+        timeout-minutes: 40
         env:
           FTS_BUILD_GRSCC: ${{ steps.preflight.outputs.grscc }}
           FTS_BUILD_FORS: ${{ steps.preflight.outputs.fors }}
           FTS_BUILD_PORS: ${{ steps.preflight.outputs.pors }}
       - name: Replay the certificate against the organizer goal
+        timeout-minutes: 25
         id: judge
         env:
           BASE: ${{ github.event.pull_request.base.sha }}

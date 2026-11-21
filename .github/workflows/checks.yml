@@ -6,13 +6,15 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
       - run: bash ci/setup.sh
+        timeout-minutes: 40
         env:
           FTS_BUILD_GRSCC: "true"
       - name: Infrastructure tests
+        timeout-minutes: 10
         run: python3 -B -m unittest discover -s tests -v
