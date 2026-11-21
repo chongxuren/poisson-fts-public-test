@@ -2,12 +2,15 @@
 
 Prove a universal lower bound on signature bytes or certify a shorter construction under the same Poisson(1) DAG-covering model. This public repository tests the Lean judge, automatic acceptance and leaderboard. **Practice only. Cash awards are $0.**
 
-[Live leaderboard](https://chongxuren.github.io/poisson-fts-public-test/) · [Submission rules and examples](RULES.md) · [Proof checks](https://github.com/chongxuren/poisson-fts-public-test/actions/workflows/submit.yml)
+[Live leaderboard](https://chongxuren.github.io/poisson-fts-public-test/) · [Submit a construction](RULES.md#submit-a-construction) · [Submit a lower bound](RULES.md#submit-a-lower-bound) · [Proof checks](https://github.com/chongxuren/poisson-fts-public-test/actions/workflows/submit.yml)
 
 | Research result | Status |
 | --- | --- |
 | 99 B universal lower bound | [Organizer's Lean theorem](formal/PoissonDAG/V2/Lower99.lean) |
-| 756 B GRS-CC construction | Proposed. A complete construction certificate is still outstanding. |
+| [756 B GRS-CC](examples/grs-cc/) | Lean scheme and proved cost/size bounds. Covering and authenticated disclosures still need a complete V2 proof. |
+| [5,760 B Merkle forest](examples/merkle_forest/) | Runnable signer, verifier and explicit judge-format program. Written covering argument and exact arithmetic check. |
+
+The first eligible construction sets the certified upper bound. Both organizer examples are unranked. Run the forest with `python3 -B examples/merkle_forest/reference.py`.
 
 Signing uses at most 2²⁴ expected hashes and verification at most 512. The model imposes a 2⁻¹²⁸ symbolic covering target on a fresh independent input. The practice lower-bound track starts at 97 B so participants can rehearse record changes using the published theorem.
 

@@ -88,7 +88,7 @@ def prepare(files, entry, dest):
     if track == "construction":
         program = json_data(files["program.json"])
         if program == {"representation": "organizer-reference-v1", "scheme": "grs-cc-v1"}:
-            code += "import PoissonDAG.Constructions.GRSCC.Circuit\n"
+            code += "import PoissonDAG.Constructions.GRSCC.Reference\n"
             literal = "PoissonDAG.GRSCC.scheme"
             claim["reference"] = "grs-cc-v1"
         else:

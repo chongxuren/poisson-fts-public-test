@@ -1,4 +1,4 @@
-import PoissonDAG.Constructions.GRSCC.Circuit
+import PoissonDAG.Constructions.GRSCC.Reference
 import PoissonDAG.V2.Model
 
 -- This regression fixture has an eligibility hypothesis and must fail the live goal.

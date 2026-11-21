@@ -651,3 +651,41 @@ footer {
       radial-gradient(ellipse at 36% 124%, #283b8275, transparent 64%), #0a0d1a;
   }
 }
+
+.construction-examples {
+  grid-column: 1 / -1;
+}
+.designs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.3rem;
+  margin-top: 1.15rem;
+}
+.designs article {
+  padding-left: 1rem;
+  border-left: 2px solid #626e92;
+}
+.designs h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 1.1rem;
+}
+.designs h3 span {
+  color: var(--mint);
+  font: 0.95rem var(--mono);
+}
+.designs p {
+  margin: 0.4rem 0 0.65rem;
+  color: var(--sub);
+  font-size: 0.93rem;
+}
+.designs a {
+  color: #c6ccfa;
+  font-size: 0.9rem;
+}
+@media (max-width: 740px) {
+  .designs { grid-template-columns: 1fr; }
+  .actions { flex-wrap: wrap; }
+}

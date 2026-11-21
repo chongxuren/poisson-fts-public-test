@@ -13,7 +13,7 @@ echo "$tool/$release/bin" >> "$GITHUB_PATH"
 targets=(PoissonDAG.V2.Lower99)
 roots=(formal/starter-cache-roots.txt)
 if [[ ${FTS_BUILD_GRSCC:-false} == true ]]; then
-  targets+=(PoissonDAG.Constructions.GRSCC.Circuit)
+  targets+=(PoissonDAG.Constructions.GRSCC.Reference)
   roots+=(formal/grscc-cache-roots.txt)
 fi
 cat "${roots[@]}" | xargs lake exe cache get

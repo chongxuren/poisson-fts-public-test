@@ -9,11 +9,11 @@
 
 The formal contract is [V2/Model.lean](formal/PoissonDAG/V2/Model.lean), together with its [base model](formal/PoissonDAG/Model.lean). It measures maximum serialized signature bytes, expected signing and verification hashes, honest failure, and the chance that disclosures from one shared Poisson(1) history cover a fresh independent raw target. Each disclosure must contribute to the recomputed root. The covering target is a symbolic probability of at most 2⁻¹²⁸. Full adaptive ROM unforgeability would require another theorem. The independent input bits feed an explicit acyclic Boolean circuit.
 
-## Submit a lower bound
+## Prepare a submission
 
 1. Fork the repository. Start a branch at the latest upstream `main`.
-2. Add **one new directory** at `submissions/lower-bound/<id>/`. Use lowercase letters, digits and hyphens for the ID and team name. Choose a fresh ID for each accepted entry.
-3. Add the four files below, commit, push your branch and open a pull request to upstream `main`. No CLI account or wallet is required.
+2. Add **one new directory** at `submissions/<track>/<id>/`, choosing either `construction` or `lower-bound`. A team may enter both tracks through separate PRs. Use lowercase letters, digits and hyphens for the ID and team name. Choose a fresh ID for each accepted entry.
+3. Add the four common files below and, for a construction, `program.json`. Commit, push your branch and open a pull request to upstream `main`. No CLI account or wallet is required.
 
 | File | Contents |
 | --- | --- |
@@ -21,6 +21,8 @@ The formal contract is [V2/Model.lean](formal/PoissonDAG/V2/Model.lean), togethe
 | `proof/Main.lean` | The theorem named `Submission.certificate` |
 | `ARGUMENT.md` | The mathematical argument in words |
 | `PROVENANCE.md` | Contributors, source of the proof and prior work |
+
+## Submit a lower bound
 
 For example, the following two files reproduce the organizer's known theorem. Say so in the provenance.
 
@@ -37,7 +39,22 @@ theorem Submission.certificate : PoissonDAG.V2.UniversalLowerBound 99 :=
 
 ## Submit a construction
 
-Use `submissions/construction/<id>/`, set the track to `construction`, and add `program.json`. Define the same scheme in your proof and prove `PoissonDAG.V2.ConstructionCertificate yourScheme N`. The judge independently translates the JSON and checks definitional equality against its own theorem target. The proposed 756 B GRS-CC scheme still needs this certificate.
+Supply an executable construction and a complete Lean proof for the same scheme. **Smaller maximum serialized signatures win.** The first eligible construction opens the track at its proven byte bound. Subsequent records must be strictly smaller. The 756 B GRS-CC and 5,760 B forest examples are unranked, so the first entry may exceed either figure.
+
+1. Place the four common files and `program.json` in `submissions/construction/<id>/`. Set the track to `construction` and `bound_bytes` to your claimed upper bound, in whole bytes.
+2. Bind the implementation to the claim using **one** of the two program formats below. For an original design, submit the actual DAG and Boolean encoder. The rehearsal also supports the fixed organizer GRS-CC implementation by name.
+3. Prove `PoissonDAG.V2.ConstructionCertificate yourScheme N` in the unconditional theorem `Submission.certificate`. The judge constructs its own goal from the manifest and claimed byte count. Eligibility includes well-formedness, honest correctness, authenticated disclosures, honest failure ≤ 2⁻¹²⁸, expected signing ≤ 2²⁴ hashes, expected verification ≤ 512 hashes, and the shared-Poisson(1) covering target ≤ 2⁻¹²⁸. The size claim is a maximum.
+4. Describe the construction, size and hash accounting in `ARGUMENT.md`. Credit the design and the proof authors in `PROVENANCE.md`. A runnable example, simulations or a theorem that assumes eligibility leaves the entry unranked.
+
+**Fixed GRS-CC reference.** Copy the [756-byte manifest](examples/grs-cc/program.json) to `program.json`. It names exactly the organizer's graph and encoder at the checked base commit. This fits the upload limit even though the graph has 2,629,119 vertices. A change to any construction parameter describes a different scheme and must use the explicit format.
+
+```json
+{"contract":"poisson-dag-v2-rehearsal-1","track":"construction","id":"grs-proof","team":"example-team","bound_bytes":756}
+```
+
+The JSON above belongs in `claim.json`. The [GRS-CC Lean entry point](formal/PoissonDAG/Constructions/GRSCC/Reference.lean) shows how to finish the proof from covering and authentication. Existing resource lemmas may be reused with attribution.
+
+**Explicit graph and encoder.** A complete runnable example is the [5,760-byte Merkle forest](examples/merkle_forest/). Its [program.json](examples/merkle_forest/program.json) is generated from the same implementation used in the sign/verify demonstration.
 
 A program has the following format. This tiny example illustrates syntax only.
 

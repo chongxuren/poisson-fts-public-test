@@ -99,3 +99,19 @@ class JudgeTests(unittest.TestCase):
             expected.write_text(expected.read_text().replace(
                 ": Prop := ", ": Prop := PoissonDAG.V2.Eligible Judge.literal → "))
             verify(directory, fixture_debug=True)
+
+    @unittest.skipUnless(os.environ.get("JUDGE_IMAGE"), "requires the pinned Linux judge")
+    def test_full_forest_manifest_compiles(self):
+        # Exercise the real full-size input. The test-only goal checks a projection;
+        # a ranked submission still has to establish every eligibility condition.
+        files, path = fixture("wrong.lean", 5760, "construction")
+        files["program.json"] = (ROOT / "examples/merkle_forest/program.json").read_bytes()
+        files["proof/Main.lean"] = b"theorem Submission.certificate : (0 : Nat) = 0 := rfl\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            prepare(files, path, directory)
+            expected = directory / "Expected.lean"
+            model, definition = expected.read_text().split("def Judge.goal : Prop := ")
+            self.assertEqual(definition.strip(), "PoissonDAG.V2.ConstructionCertificate Judge.literal 5760")
+            expected.write_text(model + "def Judge.goal : Prop := Judge.literal.counterBits = 0\n")
+            verify(directory, fixture_debug=True)

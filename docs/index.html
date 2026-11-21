@@ -32,6 +32,7 @@
         >
         <span class="nav-divider"></span>
         <a class="nav-item" href="#leaderboard">Leaderboard</a>
+        <a class="nav-item" href="#constructions">Constructions</a>
         <a class="nav-item" href="#bounds">Bound history</a>
         <a
           class="repo-link"
@@ -57,9 +58,9 @@
             <div class="actions">
               <a
                 class="primary"
-                href="https://github.com/chongxuren/poisson-fts-public-test/blob/main/RULES.md"
-                >Submit a proof</a
-              ><a class="secondary" href="#leaderboard">View leaderboard</a>
+                href="https://github.com/chongxuren/poisson-fts-public-test/blob/main/RULES.md#submit-a-construction"
+                >Submit a construction</a>
+              <a class="secondary" href="https://github.com/chongxuren/poisson-fts-public-test/blob/main/RULES.md#submit-a-lower-bound">Submit a lower bound</a>
             </div>
           </div>
           <figure class="experiment" aria-labelledby="diagram-title">
@@ -198,6 +199,26 @@
             href="https://github.com/chongxuren/poisson-fts-public-test/blob/main/RULES.md"
             >Scoring rules</a
           >
+        </section>
+
+        <section class="card construction-examples" id="constructions" aria-labelledby="constructions-title">
+          <div class="card-head">
+            <h2 id="constructions-title">Construction track</h2>
+            <a href="https://github.com/chongxuren/poisson-fts-public-test/blob/main/RULES.md#submit-a-construction">Entry rules</a>
+          </div>
+          <p class="card-note">Build a signature and prove its maximum size. The first accepted proof sets the upper bound. These two reference designs are unranked.</p>
+          <div class="designs">
+            <article>
+              <h3>GRS-CC <span>756 B</span></h3>
+              <p>A seven-layer hash DAG transmits up to 47 labels and a four-byte counter. Size and costs have Lean proofs. Covering and authentication remain open.</p>
+              <a href="https://github.com/chongxuren/poisson-fts-public-test/tree/main/examples/grs-cc">Lean construction and proof obligations</a>
+            </article>
+            <article>
+              <h3>Merkle forest <span>5,760 B</span></h3>
+              <p>Forty trees disclose nine labels each. The reference signer uses 20,482 hashes and the verifier uses 362. A full Lean certificate remains open.</p>
+              <a href="https://github.com/chongxuren/poisson-fts-public-test/tree/main/examples/merkle_forest">Run the signer and verifier</a>
+            </article>
+          </div>
         </section>
 
         <section
