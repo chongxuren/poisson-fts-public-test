@@ -1,0 +1,4 @@
+Mathlib.Algebra.BigOperators.Fin
+Mathlib.Data.Finset.Range
+Mathlib.Tactic.SplitIfs
+Mathlib.Tactic.Tauto

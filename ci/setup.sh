@@ -10,8 +10,17 @@ tar --zstd -xf "$tool/release.tar.zst" -C "$tool"
 rm "$tool/release.tar.zst"
 export PATH="$tool/$release/bin:$PATH" MATHLIB_NO_CACHE_ON_UPDATE=1
 echo "$tool/$release/bin" >> "$GITHUB_PATH"
-xargs lake exe cache get < formal/starter-cache-roots.txt
-lake build PoissonDAG.V2.Lower99
+targets=(PoissonDAG.V2.Lower99)
+roots=(formal/starter-cache-roots.txt)
+if [[ ${FTS_BUILD_GRSCC:-false} == true ]]; then
+  targets+=(PoissonDAG.Constructions.GRSCC.Circuit)
+  roots+=(formal/grscc-cache-roots.txt)
+fi
+cat "${roots[@]}" | xargs lake exe cache get
+lake build "${targets[@]}"
+mkdir -p build/lib
+printf 'import %s\n' "${targets[@]}" > build/JudgeImports.lean
+lake env lean -R build -o build/lib/JudgeImports.olean build/JudgeImports.lean
 # Mathlib cache files can be owner-only. Both containers use an unprivileged UID.
 find .lake -type d -path "*/build/lib/lean" -prune -exec chmod -R a+rX {} +
 mkdir -p build/lib/Export

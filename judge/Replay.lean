@@ -10,7 +10,7 @@ data crosses from the contestant process. The final conversion is checked by the
 def main (args : List String) : IO Unit := do
   let [file] := args | throw <| IO.userError "expected one NDJSON certificate"
   initSearchPath (← findSysroot)
-  let base ← importModules #[{module := `Expected}, {module := `PoissonDAG.V2.Lower99}] {} 0
+  let base ← importModules #[{module := `Expected}, {module := `JudgeImports}] {} 0
   let handle ← IO.FS.Handle.mk file .read
   let data ← Export.parseStream (IO.FS.Stream.ofHandle handle)
   for (name, ci) in data.constMap.toList do

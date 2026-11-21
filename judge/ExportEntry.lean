@@ -5,7 +5,7 @@ open Lean
 def main (args : List String) : IO Unit := do
   let [mod] := args | throw <| IO.userError "expected one contestant module"
   initSearchPath (← findSysroot)
-  let base ← importModules #[{module := `PoissonDAG.V2.Lower99}] {}
+  let base ← importModules #[{module := `JudgeImports}] {}
   let solution ← importModules #[{module := mod.toName}] {}
   M.run solution do
     initState solution

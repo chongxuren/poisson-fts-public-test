@@ -72,3 +72,30 @@ class JudgeTests(unittest.TestCase):
                         verify(directory, fixture_debug=True)
                 else:
                     verify(directory, fixture_debug=True)
+
+    def test_reference_manifest(self):
+        files, path = fixture("grs_reference.lean", 756, "construction")
+        files["program.json"] = (ROOT / "examples/grs-cc/program.json").read_bytes()
+        with tempfile.TemporaryDirectory() as tmp:
+            claim = prepare(files, path, Path(tmp))
+            text = (Path(tmp) / "Expected.lean").read_text()
+            self.assertEqual(claim["reference"], "grs-cc-v1")
+            self.assertIn(":= PoissonDAG.GRSCC.scheme", text)
+            self.assertIn("ConstructionCertificate Judge.literal 756", text)
+        files["program.json"] = files["program.json"].replace(b"grs-cc-v1", b"other")
+        with tempfile.TemporaryDirectory() as tmp, self.assertRaises(ValueError):
+            prepare(files, path, Path(tmp))
+
+    @unittest.skipUnless(os.environ.get("JUDGE_IMAGE"), "requires the pinned Linux judge")
+    def test_reference_proof(self):
+        files, path = fixture("grs_reference.lean", 756, "construction")
+        files["program.json"] = (ROOT / "examples/grs-cc/program.json").read_bytes()
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            prepare(files, path, directory)
+            with self.assertRaisesRegex(ValueError, "kernel rejected"):
+                verify(directory, fixture_debug=True)
+            expected = directory / "Expected.lean"
+            expected.write_text(expected.read_text().replace(
+                ": Prop := ", ": Prop := PoissonDAG.V2.Eligible Judge.literal → "))
+            verify(directory, fixture_debug=True)

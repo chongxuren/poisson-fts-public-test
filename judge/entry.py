@@ -86,7 +86,14 @@ def prepare(files, entry, dest):
             require(name in required, "unexpected entry file")
     code = "import PoissonDAG.V2.Model\n"
     if track == "construction":
-        code += "def Judge.literal : PoissonDAG.Scheme := "+scheme_literal(json_data(files["program.json"]))+"\n"
+        program = json_data(files["program.json"])
+        if program == {"representation": "organizer-reference-v1", "scheme": "grs-cc-v1"}:
+            code += "import PoissonDAG.Constructions.GRSCC.Circuit\n"
+            literal = "PoissonDAG.GRSCC.scheme"
+            claim["reference"] = "grs-cc-v1"
+        else:
+            literal = scheme_literal(program)
+        code += "def Judge.literal : PoissonDAG.Scheme := " + literal + "\n"
         goal = f"PoissonDAG.V2.ConstructionCertificate Judge.literal {bound}"
     else:
         goal = f"PoissonDAG.V2.UniversalLowerBound {bound}"
