@@ -57,8 +57,9 @@ theorem Route.root_not_supplied (r : Route) : get r.frontier (graph.length - 1) 
   have hl := r.outerJoin_not_supplied ⟨3, by decide⟩
   have hb := r.bucket.isLt
   have hz : r.bucket.val / 16 = 0 := by omega
-  rw [root_index]
-  simpa [bucketJoin, bucketLevelBase, hz] using hl
+  have lastJoin : bucketJoin 3 (r.bucket.val / 16) = 2629118 := by
+    simp [bucketJoin, bucketLevelBase, hz]
+  exact (congrArg (get r.frontier) (root_index.trans lastJoin.symm)).trans hl
 
 def authOuterChild (b : Bucket) (d : Nat) : Nat :=
   bucketTreeChild d (b.val / 2 ^ d)
@@ -125,62 +126,83 @@ private def EndsAtRoot (r : Route) (v : Nat) : Prop :=
   r.Reconstructs v ∧ ∀ label, V2.Uses graph r.frontier (close graph r.frontier r.plan).1 label v →
     V2.Uses graph r.frontier (close graph r.frontier r.plan).1 label (graphNodes - 1)
 
-set_option maxRecDepth 12000 in
-private theorem walk_to_root (r : Route) (hsucc : AuthSuccessors r) (fuel : Nat) :
-    ∀ v, graphNodes - v ≤ fuel → (v ∈ r.disclosure ∨ v ∈ r.recovery) → EndsAtRoot r v := by
+private theorem parent_before {v w : Nat} {node : Node}
+    (valid : Node.ValidAt w node) (edge : parentAt v node) : v < w := by
+  cases node with
+  | source => exact False.elim edge
+  | unary a => obtain rfl := edge; exact valid
+  | binary a b =>
+    rcases edge with h | h
+    · exact h ▸ valid.1
+    · exact h ▸ valid.2
+
+private theorem isParent_of_lookup {g : List Node} {v w : Nat} {node : Node}
+    (lookup : g[w]? = some node) (edge : parentAt v node) : V2.IsParent g v w := by
+  unfold V2.IsParent
+  rw [lookup]
+  cases node <;> exact edge
+
+/-- Induct on distance to the root using just the increasing vertex indices. -/
+private theorem walk_of_step {n : Nat} {active reaches : Nat → Prop}
+    (bound : ∀ v, active v → v < n) (root : reaches (n - 1))
+    (step : ∀ v, active v → v ≠ n - 1 →
+      ∃ w, v < w ∧ active w ∧ (reaches w → reaches v)) (fuel : Nat) :
+    ∀ v, n - v ≤ fuel → active v → reaches v := by
   induction fuel with
   | zero =>
-    intro v hdist hv
-    have hb : v < graphNodes := hv.elim (disclosure_bounds r v) (recovery_bounds r v)
+    intro v distance hv
+    have := bound v hv
     omega
   | succ fuel ih =>
-    intro v hdist hv
-    by_cases he : v = graphNodes - 1
-    · subst v
-      exact ⟨root_reconstructs r, fun _ h => h⟩
-    · obtain ⟨w, hw, hcut, hp⟩ := hsucc v hv he
-      have hb := recovery_bounds r w hw
-      have hg := graph_get ⟨w, hb⟩
-      have hvw := graph_valid w _ hg
-      have hlt : v < w := by
-        cases hnode : graphNode w with
-        | source => simp [parentAt, hnode] at hp
-        | unary a =>
-          simp only [parentAt, hnode] at hp
-          simp only [hnode, Node.ValidAt] at hvw
-          omega
-        | binary a b =>
-          simp only [parentAt, hnode] at hp
-          simp only [hnode, Node.ValidAt] at hvw
-          rcases hp with h | h <;> omega
-      have hrec := ih w (by omega) (Or.inr hw)
-      refine ⟨r.reconstructs_parent hrec.1 hcut hp, ?_⟩
-      intro label huse
-      apply hrec.2 label
-      apply V2.Uses.hash huse
-      · rw [frontier_get r w hb]
-        exact decide_eq_false hcut
-      · apply close_of_planDerives graph_valid r.frontier r.plan _ _ (r.reconstructs_planDerives _ hrec.1)
-        · rw [frontier_length, graph_length']
-        · rwa [graph_length']
-      · unfold V2.IsParent
-        rw [hg]
-        cases hn : graphNode w <;> simpa only [hn, parentAt] using hp
+    intro v distance hv
+    by_cases last : v = n - 1
+    · exact last ▸ root
+    · obtain ⟨w, hw, active_w, back⟩ := step v hv last
+      exact back (ih w (by omega) active_w)
+
+private theorem walk_to_root (r : Route) (hsucc : AuthSuccessors r) (fuel : Nat) :
+    ∀ v, graphNodes - v ≤ fuel → (v ∈ r.disclosure ∨ v ∈ r.recovery) → EndsAtRoot r v := by
+  refine walk_of_step (n := graphNodes) (active := fun v => v ∈ r.disclosure ∨ v ∈ r.recovery)
+    (reaches := EndsAtRoot r) ?_ ?_ ?_ fuel
+  · exact fun v hv => hv.elim (disclosure_bounds r v) (recovery_bounds r v)
+  · exact ⟨root_reconstructs r, fun _ h => h⟩
+  · intro v hv beforeRoot
+    obtain ⟨w, hw, hcut, edge⟩ := hsucc v hv beforeRoot
+    have hb := recovery_bounds r w hw
+    have lookup : graph[w]? = some (graphNode w) := graph_get ⟨w, hb⟩
+    refine ⟨w, parent_before (graph_valid w _ lookup) edge, Or.inr hw, ?_⟩
+    intro rest
+    refine ⟨r.reconstructs_parent rest.1 hcut edge, ?_⟩
+    intro label used
+    exact rest.2 label (.hash used ((frontier_get r w hb).trans (decide_eq_false hcut))
+      (close_of_planDerives graph_valid r.frontier r.plan
+        ((frontier_length r).trans graph_length'.symm) (lt_of_lt_of_eq hb graph_length'.symm)
+        (r.reconstructs_planDerives w rest.1))
+      (isParent_of_lookup lookup edge))
+
+/- Transport the index bound while the graph is abstract. Conversion on the
+concrete list can otherwise enumerate millions of nodes to identify its length. -/
+private theorem authenticated_at_length {g : List Node} {supplied plan : List Bool} {n : Nat}
+    (size : g.length = n)
+    (root : get supplied (g.length - 1) = false)
+    (computed : get (close g supplied plan).1 (g.length - 1) = true)
+    (used : ∀ i : Fin n, get supplied i = true →
+      V2.Uses g supplied (close g supplied plan).1 i (n - 1)) :
+    V2.Authenticated g supplied plan := by
+  cases size
+  exact ⟨root, computed, used⟩
 
 /-- The strictly increasing path of computed vertices ends at the root. -/
 theorem Route.authenticated_of_successors (r : Route)
     (hsucc : ∀ v, (v ∈ r.disclosure ∨ v ∈ r.recovery) → v ≠ graphNodes - 1 →
       ∃ w ∈ r.recovery, w ∉ r.disclosure ∧ parentAt v (graphNode w)) :
     V2.Authenticated graph r.frontier r.plan := by
-  refine ⟨r.root_not_supplied, route_close_root r, ?_⟩
+  apply authenticated_at_length graph_length' r.root_not_supplied (route_close_root r)
   intro i hi
-  have hb : i.val < graphNodes := by rw [← graph_length']; exact i.isLt
   have hm := hi
-  rw [frontier_get r _ hb, decide_eq_true_eq] at hm
-  have hroot : graph.length - 1 = graphNodes - 1 := congrArg (fun n : Nat => n - 1) graph_length'
+  rw [frontier_get r _ i.isLt, decide_eq_true_eq] at hm
   have path := walk_to_root r hsucc (graphNodes - i.val) i.val (Nat.le_refl _) (Or.inl hm)
-  have used := path.2 i.val (.input hi)
-  exact hroot.symm ▸ used
+  exact path.2 i.val (.input hi)
 
 
 end PoissonDAG.GRSCC
