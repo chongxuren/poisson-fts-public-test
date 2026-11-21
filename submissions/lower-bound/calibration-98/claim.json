@@ -1,0 +1,7 @@
+{
+  "track": "lower-bound",
+  "id": "calibration-98",
+  "bound_bytes": 98,
+  "team": "demo-alpha",
+  "contract": "poisson-dag-v2-rehearsal-1"
+}
