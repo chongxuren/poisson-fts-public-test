@@ -39,7 +39,8 @@ class JudgeTests(unittest.TestCase):
                  ("weak.lean", 98, "lower-bound", True),
                  ("base.lean", 100, "lower-bound", False),
                  ("placeholder.lean", 100, "lower-bound", False),
-                 ("wrong.lean", 756, "construction", False)]
+                 ("wrong.lean", 756, "construction", False),
+                 ("conditional.lean", 17, "construction", False)]
         for proof, bound, track, valid in cases:
             with self.subTest(proof=proof, bound=bound), tempfile.TemporaryDirectory() as tmp:
                 directory = Path(tmp)
@@ -49,3 +50,25 @@ class JudgeTests(unittest.TestCase):
                 else:
                     with self.assertRaisesRegex(ValueError, "kernel rejected"):
                         verify(directory, fixture_debug=True)
+
+    @unittest.skipUnless(os.environ.get("JUDGE_IMAGE"), "requires the pinned Linux judge")
+    def test_construction_literal_binding(self):
+        # Exercise exact matching without putting an invented eligible scheme on the board.
+        for changed_program in (False, True):
+            with self.subTest(changed_program=changed_program), tempfile.TemporaryDirectory() as tmp:
+                directory = Path(tmp)
+                files, path = fixture("conditional.lean", 17, "construction")
+                if changed_program:
+                    program = json.loads(files["program.json"])
+                    program["counter_bits"] = 2
+                    files["program.json"] = json.dumps(program).encode()
+                prepare(files, path, directory)
+                expected = directory / "Expected.lean"
+                target = expected.read_text().replace(
+                    "def Judge.goal : Prop := ", "def Judge.goal : Prop := PoissonDAG.V2.Eligible Judge.literal → ")
+                expected.write_text(target)
+                if changed_program:
+                    with self.assertRaisesRegex(ValueError, "kernel rejected"):
+                        verify(directory, fixture_debug=True)
+                else:
+                    verify(directory, fixture_debug=True)
