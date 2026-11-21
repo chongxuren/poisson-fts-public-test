@@ -1,0 +1,5 @@
+# GRS-CC at 756 bytes
+
+A signature carries up to 47 sixteen-byte labels and a four-byte counter. Seven layers each supply one guard and five authentication labels. Five outer labels finish the path. The Lean scheme satisfies the size bound and the hash budgets. Signing takes at most 11,676,797 hashes in expectation and successful verification at most 441. Every disclosed label participates in recomputing the root. [Scheme and costs](../../../formal/PoissonDAG/Constructions/GRSCC/Circuit.lean) · [Authentication](../../../formal/PoissonDAG/Constructions/GRSCC/Authentication.lean)
+
+The shared-Poisson covering proof has twenty local cases. With two local histories using the target slot, the probability is at most 35,826 / 1,000,000. The submitted theorem applies that result and names the nineteen remaining inequalities as its premise. A proof of those cases would establish the unconditional 756-byte certificate. [Local case](../../../formal/PoissonDAG/Constructions/GRSCC/TwoSame.lean) · [Thresholds](../../../formal/PoissonDAG/Constructions/GRSCC/SmallParameters.lean) · [Assembly](../../../formal/PoissonDAG/Constructions/GRSCC/Certification.lean)
