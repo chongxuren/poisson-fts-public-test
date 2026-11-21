@@ -4,12 +4,44 @@
     "construction": null
   },
   "best": {
-    "lower-bound": 97,
+    "lower-bound": 99,
     "construction": null
   },
   "rankings": {
-    "lower-bound": [],
+    "lower-bound": [
+      {
+        "track": "lower-bound",
+        "id": "calibration-99",
+        "bound_bytes": 99,
+        "team": "demo-beta",
+        "contract": "poisson-dag-v2-rehearsal-1",
+        "snapshot": "5b925319838dee983e5389018f7057e6c74639652e61d2ca5daab299a8830b94",
+        "base": "123f5daac0acf45cf3dc60fc47aa5bc1272087d0",
+        "head": "6d5703c8e4a3774d463fd3f5079252a58e20c731",
+        "pr": 2,
+        "run": 44890038563,
+        "previous": 97,
+        "delta": 2,
+        "record": true
+      }
+    ],
     "construction": []
   },
-  "history": []
+  "history": [
+    {
+      "track": "lower-bound",
+      "id": "calibration-99",
+      "bound_bytes": 99,
+      "team": "demo-beta",
+      "contract": "poisson-dag-v2-rehearsal-1",
+      "snapshot": "5b925319838dee983e5389018f7057e6c74639652e61d2ca5daab299a8830b94",
+      "base": "123f5daac0acf45cf3dc60fc47aa5bc1272087d0",
+      "head": "6d5703c8e4a3774d463fd3f5079252a58e20c731",
+      "pr": 2,
+      "run": 44890038563,
+      "previous": 97,
+      "delta": 2,
+      "record": true
+    }
+  ]
 }
