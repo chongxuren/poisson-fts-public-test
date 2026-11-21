@@ -20,14 +20,44 @@
         "head": "6d5703c8e4a3774d463fd3f5079252a58e20c731",
         "pr": 2,
         "run": 44890038563,
+        "previous": 98,
+        "delta": 1,
+        "record": true
+      },
+      {
+        "track": "lower-bound",
+        "id": "calibration-98",
+        "bound_bytes": 98,
+        "team": "demo-alpha",
+        "contract": "poisson-dag-v2-rehearsal-1",
+        "snapshot": "cd5b0cebe199837154ff06a922f7b80f307253059ccf5b03562a60af43e389e2",
+        "base": "123f5daac0acf45cf3dc60fc47aa5bc1272087d0",
+        "head": "ec0b4b5273fcabfd640bfa5efeb95bd5c7ffbc00",
+        "pr": 1,
+        "run": 44890022769,
         "previous": 97,
-        "delta": 2,
+        "delta": 1,
         "record": true
       }
     ],
     "construction": []
   },
   "history": [
+    {
+      "track": "lower-bound",
+      "id": "calibration-98",
+      "bound_bytes": 98,
+      "team": "demo-alpha",
+      "contract": "poisson-dag-v2-rehearsal-1",
+      "snapshot": "cd5b0cebe199837154ff06a922f7b80f307253059ccf5b03562a60af43e389e2",
+      "base": "123f5daac0acf45cf3dc60fc47aa5bc1272087d0",
+      "head": "ec0b4b5273fcabfd640bfa5efeb95bd5c7ffbc00",
+      "pr": 1,
+      "run": 44890022769,
+      "previous": 97,
+      "delta": 1,
+      "record": true
+    },
     {
       "track": "lower-bound",
       "id": "calibration-99",
@@ -39,8 +69,8 @@
       "head": "6d5703c8e4a3774d463fd3f5079252a58e20c731",
       "pr": 2,
       "run": 44890038563,
-      "previous": 97,
-      "delta": 2,
+      "previous": 98,
+      "delta": 1,
       "record": true
     }
   ]
