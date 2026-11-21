@@ -2,7 +2,7 @@
 
 Prove a universal lower bound on signature bytes or certify a shorter construction under the same Poisson(1) DAG-covering model. This public repository tests the Lean judge, automatic acceptance and leaderboard. **Practice only. Cash awards are $0.**
 
-[Live leaderboard](https://chongxuren.github.io/poisson-fts-public-test/) · [Submit a construction](RULES.md#submit-a-construction) · [Submit a lower bound](RULES.md#submit-a-lower-bound) · [Proof checks](https://github.com/chongxuren/poisson-fts-public-test/actions/workflows/submit.yml)
+[Challenge CLI quick start](RULES.md#submit-with-the-challenge-cli) · [Live leaderboard](https://chongxuren.github.io/poisson-fts-public-test/) · [Submit a construction](RULES.md#submit-a-construction) · [Submit a lower bound](RULES.md#submit-a-lower-bound) · [Proof checks](https://github.com/chongxuren/poisson-fts-public-test/actions/workflows/submit.yml)
 
 | Research result | Status |
 | --- | --- |
@@ -16,6 +16,6 @@ The construction leaderboard takes its upper bound from the best accepted submis
 
 Signing uses at most 2²⁴ expected hashes and verification at most 512. The model imposes a 2⁻¹²⁸ symbolic covering target on a fresh independent input. The practice lower-bound track starts at 97 B so participants can rehearse record changes using the published theorem.
 
-**Open one PR per scored claim.** A construction PR binds one parameter set to one byte bound. A lower-bound PR claims one universal bound. You can push multiple commits to finish the proof in either track. GitHub Actions checks the PR head and records each accepted entry with its score receipt. [Submission rules](RULES.md#one-scored-claim-per-pull-request) · [Score ledger](docs/scores.json)
+**Submit one scored claim per PR.** The bundled `./fts` CLI creates the fork and PR for you. Use `./fts --help` for commands. A construction PR binds one parameter set to one byte bound. A lower-bound PR claims one universal bound. You can push multiple commits to finish the proof in either track. GitHub Actions checks the PR head and records each accepted entry with its score receipt. [Submission rules](RULES.md#one-scored-claim-per-pull-request) · [Score ledger](docs/scores.json)
 
 For local infrastructure checks, run `python3 -B -m unittest discover -s tests -v`. The full Lean and container tests run in the **Test the challenge** workflow. For organizers considering a Yukon launch, see the [comparison with Yukon's rules and hosting requirements](docs/yukon.md).

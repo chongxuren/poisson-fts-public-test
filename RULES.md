@@ -15,7 +15,34 @@ Both tracks use the **authenticated-disclosure model**. Every disclosed label mu
 - A **lower-bound PR** claims one universal byte bound. A construction and a lower bound prove different claims and need separate PRs.
 - You may use multiple commits and Lean helper modules within the entry limits. Push proof fixes to the same open PR. The judge checks the final diff against the PR base and scores the single claim in `claim.json` after its proof passes. Each new head triggers a fresh run with its own priority. After acceptance, use a new entry ID and PR for any improvement.
 
+## Submit with the challenge CLI
+
+You need Python 3.8 or newer, Git, and the GitHub CLI (`gh`). Sign in to GitHub once and clone the public rehearsal.
+
+```sh
+gh auth login --hostname github.com
+git clone https://github.com/chongxuren/poisson-fts-public-test.git
+cd poisson-fts-public-test
+```
+
+Choose a fresh ID and your team name. This example starts a construction from the credited 2,020 B FORS+C entry. For a lower bound, replace `construction` with `lower-bound` in both paths and commands. Its starter is the credited 99 B proof.
+
+```sh
+./fts init construction my-design --team my-team
+# Edit the claim, program, Lean proof, argument and provenance in this directory.
+./fts check submissions/construction/my-design
+./fts submit submissions/construction/my-design
+```
+
+`check` validates the file layout, claim and construction manifest locally. `submit` publishes the selected directory, including uncommitted edits, through your GitHub account. It creates or reuses your fork and opens a PR against the latest upstream `main`. The organizer account uses a submission branch in this repository. Your working branch and index stay in place. GitHub Actions replays the Lean proof and records the score.
+
+- **Revise an open PR** by editing the same directory and running `submit` again. An unchanged retry on the same base returns the existing PR. A new head receives a new intake priority.
+- **Check a result** with `./fts status PR_NUMBER`, using the number printed by `submit`. Run `./fts leaderboard` for the official byte scores on both tracks.
+- **Rehearse** by submitting the starter with its attribution intact. A tie earns a verification receipt. Only strict improvements qualify for a leaderboard place.
+
 ## Prepare a submission
+
+To submit manually, use the same entry format and GitHub judge.
 
 1. Fork the repository. Start a branch at the latest upstream `main`.
 2. Add **one new directory** at `submissions/<track>/<id>/`, choosing either `construction` or `lower-bound`. A team may enter both tracks through separate PRs. Use lowercase letters, digits and hyphens for the ID and team name. Choose a fresh ID for each accepted entry.

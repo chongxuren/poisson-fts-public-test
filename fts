@@ -1,0 +1,213 @@
+#!/usr/bin/env python3
+"""Entrant CLI for the independent Poisson hash-DAG challenge."""
+import argparse
+import json
+import os
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+from judge.entry import ID, MAX_FILE, MAX_FILES, MAX_TOTAL, TRACKS, prepare, require
+
+ROOT = Path(__file__).resolve().parent
+REPO = "chongxuren/poisson-fts-public-test"
+EXAMPLES = {"lower-bound": "calibration-99", "construction": "fors-c-2020"}
+
+
+def run(*args, cwd=None, data=None, env=None):
+    return subprocess.run(args, cwd=cwd, input=data, env=env, stdout=subprocess.PIPE,
+                          check=True).stdout.decode().strip()
+
+
+def api(endpoint, *args):
+    return json.loads(run("gh", "api", "--hostname", "github.com", endpoint, *args))
+
+
+def init_entry(track, ident, team):
+    require(ID.fullmatch(ident) and ID.fullmatch(team), "Use 1–48 lowercase letters, digits or hyphens, starting with a letter or digit.")
+    template = ROOT / "submissions" / track / EXAMPLES[track]
+    dest = Path("submissions") / track / ident
+    require(not dest.exists(), f"{dest} already exists. Choose a fresh entry ID.")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    # Rename only a complete template into place.
+    with tempfile.TemporaryDirectory(dir=dest.parent) as temp:
+        draft = Path(temp) / "entry"
+        shutil.copytree(template, draft)
+        claim = json.loads((draft / "claim.json").read_text())
+        claim.update(id=ident, team=team)
+        (draft / "claim.json").write_text(json.dumps(claim, indent=2) + "\n")
+        with (draft / "PROVENANCE.md").open("a") as out:
+            out.write(f"\nStarted from submissions/{track}/{template.name}. Describe any changes and contributors here.\n")
+        draft.rename(dest)
+    print(f"Created {dest} from the credited {claim['bound_bytes']} B rehearsal entry.")
+    print(f"Edit the files there, then run ./fts check {dest}")
+
+
+def read_entry(path):
+    """Read the chosen entry as regular files and run the organizer's validator."""
+    require(path.is_dir() and not path.is_symlink(), f"Expected an entry directory at {path}")
+    entry = f"submissions/{path.parent.name}/{path.name}"
+    files = {}
+    total = 0
+    def walk_error(error):
+        raise error
+    for directory, dirs, names in os.walk(path, onerror=walk_error):
+        for name in dirs:
+            require(not (Path(directory) / name).is_symlink(), f"Symlink directory: {name}")
+        for name in names:
+            source = Path(directory) / name
+            info = source.lstat()
+            require(stat.S_ISREG(info.st_mode) and not (info.st_mode & 0o111), f"Expected a regular non-executable file: {source}")
+            total += info.st_size
+            require(info.st_size <= MAX_FILE and total <= MAX_TOTAL and len(files) < MAX_FILES, "Entry size limit exceeded")
+            files[source.relative_to(path).as_posix()] = source.read_bytes()
+    with tempfile.TemporaryDirectory() as temp:
+        claim = prepare(files, entry, Path(temp))
+    return entry, files, claim
+
+
+def git(repo, *args, data=None):
+    # A caller inside a Git hook may already have its own index and object store.
+    local_vars = {"GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY",
+                  "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_SHALLOW_FILE", "GIT_GRAFT_FILE", "GIT_PREFIX"}
+    env = {key: value for key, value in os.environ.items() if key not in local_vars}
+    return run("git", "-c", "credential.https://github.com.helper=",
+               "-c", "credential.https://github.com.helper=!gh auth git-credential",
+               "-c", "commit.gpgSign=false", *args, cwd=repo, data=data, env=env)
+
+
+def make_candidate(repo, base, previous, entry, files, message, user):
+    """Build exactly base + the validated files, preserving any previous PR head."""
+    parents = ["-p", base]
+    if previous:
+        common = git(repo, "merge-base", base, previous)
+        changed = git(repo, "diff", "--no-renames", "--name-only", "-z", common, previous).rstrip("\0").split("\0")
+        require(all(p.startswith(entry + "/") for p in changed), "Existing branch contains other work. Choose a new entry ID.")
+        parents = ["-p", previous] if common == base else ["-p", base, "-p", previous]
+    git(repo, "read-tree", base)
+    for name, raw in files.items():
+        blob = git(repo, "hash-object", "-w", "--stdin", data=raw)
+        git(repo, "update-index", "--add", "--cacheinfo", "100644", blob, f"{entry}/{name}")
+    tree = git(repo, "write-tree")
+    if previous and common == base and tree == git(repo, "rev-parse", previous + "^{tree}"):
+        return previous
+    login = user["login"]
+    email = f"{user['id']}+{login}@users.noreply.github.com"
+    return git(repo, "-c", f"user.name={login}", "-c", f"user.email={email}",
+               "commit-tree", tree, *parents, "-m", message)
+
+
+def submit(entry, files, claim):
+    user = api("user")
+    login = user["login"]
+    upstream = f"https://github.com/{REPO}.git"
+    branch = f"fts/{claim['track']}/{claim['id']}"
+    ref = "refs/heads/" + branch
+    title = f"{claim['id']} · {claim['track']}"
+    with tempfile.TemporaryDirectory() as temp:
+        repo = Path(temp)
+        git(repo, "init", "--quiet", "--bare")
+        git(repo, "fetch", "--quiet", "--no-tags", upstream, "refs/heads/main")
+        base = git(repo, "rev-parse", "FETCH_HEAD")
+        if git(repo, "ls-tree", base, "--", entry):
+            board = json.loads(git(repo, "show", base + ":docs/scores.json"))
+            for row in board["history"]:
+                if (row["track"], row["id"], row["snapshot"]) == (claim["track"], claim["id"], claim["snapshot"]):
+                    print(f"Already accepted: https://github.com/{REPO}/pull/{row['pr']}")
+                    return
+            raise ValueError("This entry ID already exists upstream. Use a new ID for an improvement.")
+
+        fork = REPO
+        if login.lower() != REPO.split("/")[0].lower():
+            # GitHub returns the user's existing fork here too, including renamed forks.
+            fork = api(f"repos/{REPO}/forks", "--method", "POST")["full_name"]
+        url = f"https://github.com/{fork}.git"
+        head = f"{login}:{branch}"
+        prs = api(f"repos/{REPO}/pulls", "--method", "GET", "-f", f"head={head}",
+                  "-f", "base=main", "-f", "state=all")
+        pr = next((p for p in prs if p["state"] == "open"), None)
+        require(pr or not prs, "The previous PR is closed. Reopen it or choose a new entry ID.")
+        for attempt in range(4):
+            try:
+                existing = git(repo, "ls-remote", "--heads", url, ref)
+                break
+            except subprocess.CalledProcessError:
+                if attempt == 3 or fork == REPO:
+                    raise
+                time.sleep(2 ** attempt)  # GitHub may still be provisioning a new fork.
+        previous = None
+        if existing:
+            git(repo, "fetch", "--quiet", "--no-tags", url, ref)
+            previous = git(repo, "rev-parse", "FETCH_HEAD")
+        elif pr:
+            raise ValueError("The open PR's branch is missing. Restore the branch or use a new entry ID.")
+        commit = make_candidate(repo, base, previous, entry, files, f"{title} · {claim['bound_bytes']} B", user)
+        if commit != previous:
+            git(repo, "push", "--quiet", url, f"{commit}:{ref}")
+        if not pr:
+            pr = api(f"repos/{REPO}/pulls", "--method", "POST", "-f", f"head={head}",
+                     "-f", "base=main", "-f", f"title={title}",
+                     "-f", f"body=Submit the {claim['track']} claim in `{entry}/claim.json` to the rehearsal judge.")
+    print(pr["html_url"])
+    print(f"Check the judge with ./fts status {pr['number']}")
+
+
+def status(number):
+    pr = api(f"repos/{REPO}/pulls/{number}")
+    sha = pr["head"]["sha"]
+    combined = api(f"repos/{REPO}/commits/{sha}/status")
+    result = next((s for s in combined["statuses"] if s["context"] == "Poisson challenge judge"), None)
+    print(f"PR #{number} · {pr['state']} · {sha[:12]}\n{pr['html_url']}")
+    if result:
+        print(f"{result['state']}: {result['description']}\n{result['target_url']}")
+    else:
+        print("The judge has posted no result for this revision yet.")
+
+
+def leaderboard():
+    board = json.loads(run("gh", "api", "--hostname", "github.com",
+                           "-H", "Accept: application/vnd.github.raw+json",
+                           f"repos/{REPO}/contents/docs/scores.json?ref=main"))
+    for track in TRACKS:
+        best = board["best"][track]
+        print(f"{track} · " + (f"best {best} B" if best is not None else "open"))
+        for rank, row in enumerate(board["rankings"][track], 1):
+            print(f"  {rank}. {row['team']}   {row['bound_bytes']} B   {row['id']}   PR #{row['pr']}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    new = commands.add_parser("init", help="start from a credited example")
+    new.add_argument("track", choices=TRACKS)
+    new.add_argument("id")
+    new.add_argument("--team", required=True)
+    for name, help_text in (("check", "check entry files locally"), ("submit", "publish one entry in a GitHub pull request")):
+        commands.add_parser(name, help=help_text).add_argument("entry", type=Path)
+    commands.add_parser("status", help="show the judge result for the current PR head").add_argument("pr", type=int)
+    commands.add_parser("leaderboard", help="read the official score ledger")
+    args = parser.parse_args()
+    if args.command == "init":
+        init_entry(args.track, args.id, args.team)
+    elif args.command == "status":
+        status(args.pr)
+    elif args.command == "leaderboard":
+        leaderboard()
+    else:
+        entry, files, claim = read_entry(args.entry)
+        print(f"Entry format OK: {entry} · {claim['bound_bytes']} B · {len(files)} files", flush=True)
+        if args.command == "submit":
+            submit(entry, files, claim)
+        else:
+            print("GitHub Actions checks the Lean proof after submission.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (OSError, ValueError, subprocess.CalledProcessError) as error:
+        sys.exit(f"fts: {error}")

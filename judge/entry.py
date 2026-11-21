@@ -7,7 +7,9 @@ from pathlib import Path
 
 ID = re.compile(r"[a-z0-9][a-z0-9-]{0,47}\Z")
 TRACKS = ("lower-bound", "construction")
+MAX_FILES = 64
 MAX_FILE = 4 * 1024 * 1024
+MAX_TOTAL = 16 * 1024 * 1024
 
 # The manifest selects an exact organizer scheme. The submitted theorem still
 # has to inhabit ConstructionCertificate for that scheme and the claimed size.
@@ -97,7 +99,7 @@ def prepare(files, entry, dest):
     parts = entry.split("/")
     require(len(parts)==3 and parts[0]=="submissions" and parts[1] in TRACKS and ID.fullmatch(parts[2]), "bad entry path")
     track, ident = parts[1:]
-    require(0<len(files)<=64 and sum(map(len,files.values()))<=16*1024**2, "entry size limit")
+    require(0<len(files)<=MAX_FILES and sum(map(len,files.values()))<=MAX_TOTAL, "entry size limit")
     required = {"claim.json","proof/Main.lean","ARGUMENT.md","PROVENANCE.md"}
     if track=="construction":
         required.add("program.json")
@@ -149,7 +151,7 @@ def from_git(base, head, dest):
     require(all(re.fullmatch("[0-9a-f]{40}", s) for s in (base,head)), "bad commit")
     require(git("merge-base",base,head).decode().strip()==base, "rebase onto the checked base")
     changes=git("diff","--no-renames","--name-status","-z",base,head).split(b"\0")[:-1]
-    require(0<len(changes)<=128 and all(x==b"A" for x in changes[::2]), "one new entry only")
+    require(0<len(changes)<=2*MAX_FILES and all(x==b"A" for x in changes[::2]), "one new entry only")
     paths=[s.decode("ascii") for s in changes[1::2]]
     entries={"/".join(p.split("/")[:3]) for p in paths}
     require(len(entries)==1,"one entry per PR")
@@ -162,6 +164,6 @@ def from_git(base, head, dest):
         meta=git("ls-tree","-l",head,"--",p).split(b"\t",1)[0].split()
         require(len(meta)==4 and meta[:2]==[b"100644",b"blob"] and int(meta[3])<=MAX_FILE,"invalid file mode or size")
         total += int(meta[3])
-        require(total<=16*1024**2, "entry size limit")
+        require(total<=MAX_TOTAL, "entry size limit")
         files[p[len(entry)+1:]]=git("cat-file","blob",meta[2].decode())
     return prepare(files,entry,dest)
