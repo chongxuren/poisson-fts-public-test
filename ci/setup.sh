@@ -16,6 +16,10 @@ if [[ ${FTS_BUILD_GRSCC:-false} == true ]]; then
   targets+=(PoissonDAG.Constructions.GRSCC.Reference)
   roots+=(formal/grscc-cache-roots.txt)
 fi
+if [[ ${FTS_BUILD_FORS:-false} == true ]]; then
+  targets+=(PoissonDAG.Constructions.FORS.Components)
+  roots+=(formal/fors-cache-roots.txt)
+fi
 cat "${roots[@]}" | xargs lake exe cache get
 lake build "${targets[@]}"
 mkdir -p build/lib

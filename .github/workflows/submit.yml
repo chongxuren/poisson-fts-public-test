@@ -31,6 +31,7 @@ jobs:
       - run: bash ci/setup.sh
         env:
           FTS_BUILD_GRSCC: ${{ steps.preflight.outputs.grscc }}
+          FTS_BUILD_FORS: ${{ steps.preflight.outputs.fors }}
       - name: Replay the certificate against the organizer goal
         id: judge
         env:

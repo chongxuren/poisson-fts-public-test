@@ -46,6 +46,8 @@ Supply an executable construction and a complete Lean proof for the same scheme.
 3. Prove `PoissonDAG.V2.ConstructionCertificate yourScheme N` in the unconditional theorem `Submission.certificate`. The judge constructs its own goal from the manifest and claimed byte count. Eligibility includes well-formedness, honest correctness, authenticated disclosures, honest failure ≤ 2⁻¹²⁸, expected signing ≤ 2²⁴ hashes, expected verification ≤ 512 hashes, and the shared-Poisson(1) covering target ≤ 2⁻¹²⁸. The size claim is a maximum.
 4. Describe the construction, size and hash accounting in `ARGUMENT.md`. Credit the design and the proof authors in `PROVENANCE.md`. A runnable example, simulations or a theorem that assumes eligibility leaves the entry unranked.
 
+**FORS references.** The three frozen configurations have [parameter sets and Lean proofs](examples/fors/). Use an exact manifest such as `{"representation":"organizer-reference-v1","scheme":"fors-c-17-7-19-v1"}`. The byte bound in your claim must follow from a proof for that exact scheme.
+
 **Fixed GRS-CC reference.** Copy the [756-byte manifest](examples/grs-cc/program.json) to `program.json`. It names exactly the organizer's graph and encoder at the checked base commit. This fits the upload limit even though the graph has 2,629,119 vertices. A change to any construction parameter describes a different scheme and must use the explicit format.
 
 ```json

@@ -9,6 +9,15 @@ ID = re.compile(r"[a-z0-9][a-z0-9-]{0,47}\Z")
 TRACKS = ("lower-bound", "construction")
 MAX_FILE = 4 * 1024 * 1024
 
+# The manifest selects an exact organizer scheme. The submitted theorem still
+# has to inhabit ConstructionCertificate for that scheme and the claimed size.
+REFERENCES = {
+    "grs-cc-v1": ("GRSCC.Reference", "PoissonDAG.GRSCC.scheme"),
+    "fors-18-8-v1": ("FORS.Literal", "PoissonDAG.FORS.Config.scheme ⟨18, 8, 0, 0⟩"),
+    "fors-c-18-7-18-v1": ("FORS.Literal", "PoissonDAG.FORS.Config.scheme ⟨18, 7, 18, 25⟩"),
+    "fors-c-17-7-19-v1": ("FORS.Literal", "PoissonDAG.FORS.Config.scheme ⟨17, 7, 19, 26⟩"),
+}
+
 def require(test, message):
     if not test:
         raise ValueError(message)
@@ -111,10 +120,13 @@ def prepare(files, entry, dest):
     code = "import PoissonDAG.V2.Model\n"
     if track == "construction":
         program = json_data(files["program.json"])
-        if program == {"representation": "organizer-reference-v1", "scheme": "grs-cc-v1"}:
-            code += "import PoissonDAG.Constructions.GRSCC.Reference\n"
-            literal = "PoissonDAG.GRSCC.scheme"
-            claim["reference"] = "grs-cc-v1"
+        if isinstance(program, dict) and program.get("representation") == "organizer-reference-v1":
+            name = program.get("scheme")
+            require(set(program) == {"representation", "scheme"} and
+                    isinstance(name, str) and name in REFERENCES, "unknown organizer reference")
+            module, literal = REFERENCES[name]
+            code += "import PoissonDAG.Constructions." + module + "\n"
+            claim["reference"] = name
         else:
             definitions = []
             literal = scheme_literal(program, definitions)

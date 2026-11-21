@@ -33,6 +33,22 @@ class JudgeTests(unittest.TestCase):
                 prepare(*fixture("wrong.lean", 99, track), Path(tmp))
                 self.assertIn("Judge.goal", (Path(tmp) / "Expected.lean").read_text())
 
+    def test_fors_manifests_bind_distinct_circuits(self):
+        refs = {"fors-18-8-v1": "18, 8, 0, 0", "fors-c-18-7-18-v1": "18, 7, 18, 25",
+                "fors-c-17-7-19-v1": "17, 7, 19, 26"}
+        for ref, fields in refs.items():
+            with self.subTest(ref=ref), tempfile.TemporaryDirectory() as tmp:
+                files, path = fixture("wrong.lean", 2020, "construction")
+                program = {"representation": "organizer-reference-v1", "scheme": ref}
+                files["program.json"] = json.dumps(program).encode()
+                self.assertEqual(prepare(files, path, Path(tmp))["reference"], ref)
+                self.assertIn("Config.scheme ⟨" + fields + "⟩", (Path(tmp) / "Expected.lean").read_text())
+        with tempfile.TemporaryDirectory() as tmp:
+            files, path = fixture("wrong.lean", 2020, "construction")
+            files["program.json"] = b'{"representation":"organizer-reference-v1","scheme":"fors-unknown"}'
+            with self.assertRaisesRegex(ValueError, "unknown organizer reference"):
+                prepare(files, path, Path(tmp))
+
     @unittest.skipUnless(os.environ.get("JUDGE_IMAGE"), "requires the pinned Linux judge")
     def test_kernel(self):
         cases = [("base.lean", 99, "lower-bound", True),
