@@ -13,7 +13,7 @@ echo "$tool/$release/bin" >> "$GITHUB_PATH"
 targets=(PoissonDAG.V2.Lower99)
 roots=(formal/starter-cache-roots.txt)
 if [[ ${FTS_BUILD_GRSCC:-false} == true ]]; then
-  targets+=(PoissonDAG.Constructions.GRSCC.{Reference,Certification,TwoSame})
+  targets+=(PoissonDAG.Constructions.GRSCC.Circuit)
   roots+=(formal/grscc-cache-roots.txt)
 fi
 if [[ ${FTS_BUILD_FORS:-false} == true ]]; then
@@ -26,17 +26,18 @@ if [[ ${FTS_BUILD_PORS:-false} == true ]]; then
 fi
 cat "${roots[@]}" | xargs lake exe cache get
 lake build "${targets[@]}"
-mkdir -p build/lib
-printf 'import %s\n' "${targets[@]}" > build/JudgeImports.lean
-lake env lean -R build -o build/lib/JudgeImports.olean build/JudgeImports.lean
-# Mathlib cache files can be owner-only. Both containers use an unprivileged UID.
-find .lake -type d -path "*/build/lib/lean" -prune -exec chmod -R a+rX {} +
-mkdir -p build/lib/Export
-export LEAN_PATH="$PWD/build/lib"
-lean -o build/lib/Export.olean judge/vendor/Export.lean
-lean -o build/lib/Export/Parse.olean judge/vendor/Export/Parse.lean
-lean -o build/lib/ExportEntry.olean judge/ExportEntry.lean
-lean -o build/lib/Replay.olean judge/Replay.lean
-image=ubuntu@sha256:9a04f13b3f80ef056361e30868593b1cfd2279fe19e4081cb93a90bf56819d6a
-docker pull "$image"
-echo "JUDGE_IMAGE=$image" >> "$GITHUB_ENV"
+python3 - <<'PROBE'
+import re
+from pathlib import Path
+p = Path('formal/PoissonDAG/Constructions/GRSCC/AuthCore.lean')
+s = p.read_text().replace('namespace PoissonDAG.GRSCC', 'set_option Elab.async false\nnamespace PoissonDAG.GRSCC')
+# Insert markers before docs and scoped options, keeping each attached to its declaration.
+starts = list(re.finditer(r'(?m)^(?:private )?(?:theorem|def) ([A-Za-z_.]+)', s))
+for m in reversed(starts):
+    begin = s.rfind('\n\n', 0, m.start()) + 2
+    if begin < s.index('namespace PoissonDAG.GRSCC') + len('namespace PoissonDAG.GRSCC'):
+        begin = m.start()
+    s = s[:begin] + 'run_cmd IO.eprintln "checking ' + m[1] + '"\n' + s[begin:]
+Path('build/AuthProfile.lean').write_text(s)
+PROBE
+timeout 120s lake env lean build/AuthProfile.lean

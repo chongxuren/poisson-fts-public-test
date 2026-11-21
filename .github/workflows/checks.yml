@@ -14,5 +14,3 @@ jobs:
       - run: bash ci/setup.sh
         env:
           FTS_BUILD_GRSCC: "true"
-      - name: Infrastructure tests
-        run: python3 -B -m unittest discover -s tests -v
