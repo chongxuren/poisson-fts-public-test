@@ -101,6 +101,25 @@ class JudgeTests(unittest.TestCase):
             verify(directory, fixture_debug=True)
 
     @unittest.skipUnless(os.environ.get("JUDGE_IMAGE"), "requires the pinned Linux judge")
+    def test_grs_actual_size_and_hash_budgets(self):
+        files, path = fixture("grs_budgets.lean", 756, "construction")
+        files["program.json"] = (ROOT / "examples/grs-cc/program.json").read_bytes()
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            prepare(files, path, directory)
+            expected = directory / "Expected.lean"
+            definitions, full_goal = expected.read_text().split("def Judge.goal : Prop := ")
+            self.assertEqual(full_goal.strip(),
+                             "PoissonDAG.V2.ConstructionCertificate Judge.literal 756")
+            # A component check has a separate test-only goal and cannot promote a score.
+            expected.write_text(definitions + """def Judge.goal : Prop :=
+  Judge.literal.WellFormed ∧ Judge.literal.Correct ∧ Judge.literal.size ≤ 756 ∧
+  Judge.literal.signCost ≤ 2^24 ∧ Judge.literal.verifyCost ≤ 512 ∧
+  Judge.literal.failure ≤ (1 : Rat) / 2^128
+""")
+            verify(directory, fixture_debug=True)
+
+    @unittest.skipUnless(os.environ.get("JUDGE_IMAGE"), "requires the pinned Linux judge")
     def test_full_forest_manifest_compiles(self):
         # Exercise the real full-size input. The test-only goal checks a projection;
         # a ranked submission still has to establish every eligibility condition.
