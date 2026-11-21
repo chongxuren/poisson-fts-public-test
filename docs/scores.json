@@ -5,7 +5,7 @@
   },
   "best": {
     "lower-bound": 99,
-    "construction": null
+    "construction": 2132
   },
   "rankings": {
     "lower-bound": [
@@ -40,7 +40,24 @@
         "record": true
       }
     ],
-    "construction": []
+    "construction": [
+      {
+        "contract": "poisson-dag-v2-rehearsal-1",
+        "track": "construction",
+        "id": "fors-c-2132",
+        "team": "organizer",
+        "bound_bytes": 2132,
+        "reference": "fors-c-18-7-18-v1",
+        "snapshot": "c66d93e4b2b16e495cf6ed48d908bb629757a2b0aa5c3f5f6b552e971375a47f",
+        "base": "03a08dfcb18efd4af4fbf9a7f671cdd1926995ed",
+        "head": "1261c41a3dc1d9151eca8b3fe8e62418979a4050",
+        "pr": 5,
+        "run": 44911275655,
+        "previous": null,
+        "delta": null,
+        "record": true
+      }
+    ]
   },
   "history": [
     {
@@ -71,6 +88,22 @@
       "run": 44890038563,
       "previous": 98,
       "delta": 1,
+      "record": true
+    },
+    {
+      "contract": "poisson-dag-v2-rehearsal-1",
+      "track": "construction",
+      "id": "fors-c-2132",
+      "team": "organizer",
+      "bound_bytes": 2132,
+      "reference": "fors-c-18-7-18-v1",
+      "snapshot": "c66d93e4b2b16e495cf6ed48d908bb629757a2b0aa5c3f5f6b552e971375a47f",
+      "base": "03a08dfcb18efd4af4fbf9a7f671cdd1926995ed",
+      "head": "1261c41a3dc1d9151eca8b3fe8e62418979a4050",
+      "pr": 5,
+      "run": 44911275655,
+      "previous": null,
+      "delta": null,
       "record": true
     }
   ]
