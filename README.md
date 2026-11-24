@@ -2,7 +2,7 @@
 
 Prove a universal lower bound on signature bytes or certify a shorter construction under the same Poisson(1) DAG-covering model. This public repository tests the Lean judge, automatic acceptance and leaderboard. **Practice only. Cash awards are $0.**
 
-[Challenge CLI quick start](RULES.md#submit-with-the-challenge-cli) · [Live leaderboard](https://chongxuren.github.io/poisson-fts-public-test/) · [Submit a construction](RULES.md#submit-a-construction) · [Submit a lower bound](RULES.md#submit-a-lower-bound) · [Proof checks](https://github.com/chongxuren/poisson-fts-public-test/actions/workflows/submit.yml)
+[Challenge CLI quick start](RULES.md#submit-with-the-challenge-cli) · [Organization website](https://few-time-signature.github.io/) · [Practice leaderboard](https://chongxuren.github.io/poisson-fts-public-test/rehearsal.html) · [Submit a construction](RULES.md#submit-a-construction) · [Submit a lower bound](RULES.md#submit-a-lower-bound) · [Proof checks](https://github.com/chongxuren/poisson-fts-public-test/actions/workflows/submit.yml)
 
 | Research result | Status |
 | --- | --- |
